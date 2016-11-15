@@ -8,7 +8,7 @@
 #'   \item{rcstagecode}{Stage \code{factor}}
 #'   \item{ctcode1}{ Conventional tag code 1\code{numeric}}
 #'   \item{ctcode2}{ Conventional tag code 2\code{numeric}}
-#'   \item{date}{Recovery date of fish\code{Date}}
+#'   \item{date}{Recovery date of fish\code{factor}}
 #'   \item{time}{Recovery time of fish \code{factor}}
 #'   \item{latitude}{Latitude of recovery \code{numeric}}
 #'   \item{longitude}{Longitude of recovery \code{numeric}}
