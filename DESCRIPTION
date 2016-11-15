@@ -13,5 +13,13 @@ Collate:
 	methodsFLTag.R
 	coerceFLTag.R  
 	createAccessorsFLTag.R
+VignetteBuilder: 
+    knitr
+Depends:
+    R(>= 3.0.1),
+    methods
+Suggests:
+    knitr,
+    rmarkdown
 LazyLoad: Yes
 LazyData: Yes
