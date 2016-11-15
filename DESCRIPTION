@@ -8,10 +8,10 @@ LinkingTo: FLash
 Maintainer: Laurence Kell <l.kell@cefas.co.uk>
 License: GPL 2 or above
 Collate:  
-  classFLag.R 
-  coerceFLag.R 
-  constructorsFLag.R 
-  createAccessorsFLag.R 
-  methodsFLag.R
+	classFLTag.R   
+	constructorsFLTag.R     
+	methodsFLTag.R
+	coerceFLTag.R  
+	createAccessorsFLTag.R
 LazyLoad: Yes
 LazyData: Yes
