@@ -7,6 +7,11 @@ Depends: methods, R(>= 2.7.1), FLCore(>= 2.0), ggplot2, FLash(>= 0.7)
 LinkingTo: FLash
 Maintainer: Laurence Kell <l.kell@cefas.co.uk>
 License: GPL 2 or above
-Collate:  classFLag.R coerceFLag.R constructorsFLag.R createAccessorsFLag.R methodsFLag.R
+Collate:  
+  classFLag.R 
+  coerceFLag.R 
+  constructorsFLag.R 
+  createAccessorsFLag.R 
+  methodsFLag.R
 LazyLoad: Yes
 LazyData: Yes
