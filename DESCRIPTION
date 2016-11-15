@@ -13,6 +13,8 @@ Collate:
 	methodsFLTag.R
 	coerceFLTag.R  
 	createAccessorsFLTag.R
+	releases.R
+	recoveries.R 
 VignetteBuilder: 
     knitr
 Depends:
