@@ -13,12 +13,31 @@ aottp <- odbcConnect("aottp-servigis", case="postgresql", believeNRows=FALSE)
 
 releases <- sqlQuery(aottp, "SELECT * from releases;")
 
-#4. Get recoveries
+#4. Prune the data
 
-recoveries <- sqlQuery(aottp, "SELECT * from recoveries;")
+releases <- releases[,c(2,4,5,6:18,20,21,22,23,24,25,26,27,28,29,47,52)]
+
+
+#5. Get recoveries
+
+recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
+
+#6. Prune the recoveries
+
+recoveries<- recoveries[,c(2,5:19,22,26:28,44)]
 
 #5. Save the data 
 
-save (releases,file='/home/dbeare/FLTag/tests/releases.RData',compress=T)
-save (recoveries,file='/home/dbeare/FLTag/tests/recoveries.RData',compress=T)
+save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="xz")
+save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="xz")
+
+
+
+
+
+
+
+
+
+
 
