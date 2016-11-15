@@ -1,11 +1,11 @@
 #' releases
 #' 
-#' Releases of tropical tuna in the Atlantic Ocean (example dataset from Atlantic Ocean Tropical Tuna Programme 2015-2020.
+#' Releases of tropical tuna in the Atlantic Ocean (example dataset from Atlantic Ocean Tropical Tuna Programme 2015-2020).
 #'
 #' @format A \code{data.frame}
 #' \describe{
 #'   \item{speciescode}{ICCAT 3 letter species codes \code{character}}
-#'   \item{rcstagecode}{Stage \code{numeric}}
+#'   \item{rcstagecode}{Stage \code{factor}}
 #'   \item{ctcode1}{ Conventional tag code 1\code{numeric}}
 #'   \item{ctcode2}{ Conventional tag code 2\code{numeric}}
 #'   \item{date}{Release date of fish\code{Date}}
