@@ -4,11 +4,11 @@
 #'
 #' @format A \code{data.frame}
 #' \describe{
-#'   \item{speciescode}{ICCAT 3 letter species codes \code{character}}
+#'   \item{speciescode}{ICCAT 3 letter species codes \code{factor}}
 #'   \item{rcstagecode}{Stage \code{factor}}
 #'   \item{ctcode1}{ Conventional tag code 1\code{numeric}}
 #'   \item{ctcode2}{ Conventional tag code 2\code{numeric}}
-#'   \item{date}{Release date of fish\code{Date}}
+#'   \item{date}{Release date of fish\code{factor}}
 #'   \item{time}{Release time of fish \code{factor}}
 #'   \item{latitude}{Latitude of release \code{numeric}}
 #'   \item{longitude}{Longitude of release \code{numeric}}
