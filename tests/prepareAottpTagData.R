@@ -46,8 +46,8 @@ dimnames(recoveries)[[2]] <- c("specimenid","rcstagecode","ctcode1","ctcode2","r
 
 #7. Save the data 
 
-save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="xz")
-save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="xz")
+save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
+save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
 
 
 ## Shapefiles ##
@@ -74,6 +74,47 @@ eez.small <- gSimplify(eez,tol=1,topologyPreserve=TRUE)
 
 save (eez.small,file='/home/dbeare/FLTag/data/eezsmall.RData',compress="xz")
 save (lme,file='/home/dbeare/FLTag/data/lme.RData',compress="xz")
+
+#4. FAD moratorium area 2016
+
+l1 <- cbind(c(-20,-20), c(-4,5))
+l2 <- cbind(c(-20,-9.05), c(5,5))
+l3 <- cbind(c(-20,11.38),c(-4,-4))
+
+Sl1 <- Line(l1)
+Sl2 <- Line(l2)
+Sl3 <- Line(l3)
+
+S1 <- Lines(list(Sl1), ID = "a")
+S2 <- Lines(list(Sl2), ID = "b")
+S3 <- Lines(list(Sl3), ID = "c")
+
+Sl <- SpatialLines(list(S1, S2, S3))
+
+
+library(rgeos)
+df <- data.frame(len = sapply(1:length(Sl), function(i) gLength(Sl[i, ])))
+rownames(df) <- sapply(1:length(Sl), function(i) Sl@lines[[i]]@ID)
+
+## SpatialLines to SpatialLinesDataFrame
+
+Sldf <- SpatialLinesDataFrame(Sl, data = df)
+
+map('world',xlim=c(-30,30),ylim=c(-10,30))
+plot(Sldf,col='blue',add=T)
+
+
+save(Sldf,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
+
+
+
+
+
+
+
+
+
+
 
 
 
