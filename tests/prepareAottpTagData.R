@@ -23,8 +23,8 @@ releases$rcstagecode <- as.character(releases$rcstagecode)
 releases$release_date <- strptime(paste(releases$date,releases$time), format = "%Y-%m-%d %H:%M:%S") 
 releases <- releases[,-c(5,6)]
 releases$gearcode <- as.character(releases$gearcode)
-dimnames(releases)[[2]] <- c("rel_speciescode","rcstagecode","ctcode1","ctcode2","rel_latitude","rel_longitude","rel_gearcode","rel_depth","rel_len",         
-"specimenid","rel_date")
+dimnames(releases)[[2]] <- c("speciescode","rcstagecode","ctcode1","ctcode2","latitude","longitude","gearcode","depth","len",         
+"specimenid","date")
 
 #5. Get recoveries
 
@@ -41,8 +41,8 @@ recoveries$rcstagecode <- as.character(recoveries$rcstagecode)
 recoveries$recovery_date <- strptime(paste(recoveries$date,recoveries$time), format = "%Y-%m-%d %H:%M:%S") 
 recoveries <- recoveries[,-c(5,6)]
 recoveries$gearcode <- as.character(recoveries$gearcode)
-dimnames(recoveries)[[2]] <- c("specimenid","rcstagecode","ctcode1","ctcode2","rec_latitude","rec_longitude","rec_gearcode",
-                               "rel_len","rec_date")
+dimnames(recoveries)[[2]] <- c("specimenid","rcstagecode","ctcode1","ctcode2","latitude","longitude","gearcode",
+                               "len","date")
 
 #7. Save the data 
 
