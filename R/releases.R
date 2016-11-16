@@ -4,20 +4,18 @@
 #'
 #' @format A \code{data.frame}
 #' \describe{
-#'   \item{speciescode}{ICCAT 3 letter species codes \code{factor}}
+#'   \item{rel_speciescode}{ICCAT 3 letter species codes recorded at release \code{factor}}
 #'   \item{rcstagecode}{Stage \code{factor}}
 #'   \item{ctcode1}{ Conventional tag code 1\code{numeric}}
 #'   \item{ctcode2}{ Conventional tag code 2\code{numeric}}
-#'   \item{date}{Release date of fish\code{factor}}
-#'   \item{time}{Release time of fish \code{factor}}
-#'   \item{latitude}{Latitude of release \code{numeric}}
-#'   \item{longitude}{Longitude of release \code{numeric}}
-#'   \item{gearcode}{Gearcode used by release platform \code{factor}}
-#'   \item{depth}{Depth of release \code{numeric}}
-#'   \item{len}{Length of fish \code{numeric}}
+#'   \item{rel_latitude}{Latitude of release \code{numeric}}
+#'   \item{rel_longitude}{Longitude of release \code{numeric}}
+#'   \item{rel_gearcode}{Gearcode used by release platform \code{factor}}
+#'   \item{rel_depth}{Depth at release \code{numeric}}
+#'   \item{rel_len}{Length of fish recorded at release \code{numeric}}
 #'   \item{specimenid}{Unique fish ID \code{numeric}}
+#'   \item{rel_date}{Release date \code{date}}
 #' }
-#' 
 #' @references \url{http://http://iccat.int/Documents/CVSP/CV070_2014/n_4/CV070041365.pdf/}
 #' @name releases
 #' @docType data
