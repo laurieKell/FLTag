@@ -97,14 +97,16 @@ df <- data.frame(len = sapply(1:length(Sl), function(i) gLength(Sl[i, ])))
 rownames(df) <- sapply(1:length(Sl), function(i) Sl@lines[[i]]@ID)
 
 ## SpatialLines to SpatialLinesDataFrame
+library(rgdal)
 
 Sldf <- SpatialLinesDataFrame(Sl, data = df)
+proj4string(Sldf) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+system('rm -r /home/dbeare/fadmoratorium')
+writeOGR(Sldf,"/home/dbeare/fadmoratorium",layer="fadmoratorium" , driver="ESRI Shapefile")
 
-map('world',xlim=c(-30,30),ylim=c(-10,30))
-plot(Sldf,col='blue',add=T)
+fadmoratorium <- readOGR("/home/dbeare/fadmoratorium",layer="fadmoratorium")
 
-
-save(Sldf,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
+save(fadmoratorium,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
 
 
 
