@@ -1,5 +1,5 @@
 ---
-title: "Tagging package"
+title: "Ocean Fish Tagging Package"
 author: "Dougie Beare, Laurie Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: rmarkdown:::html_document
@@ -23,8 +23,8 @@ opts_chunk$set(echo    =!TRUE,
                message =FALSE,
                tidy    =FALSE,
                warnings=FALSE,
-               fig.height=4.5,
-               fig.width =4.5)
+               fig.height=7,
+               fig.width =7)
 ```
 
 
@@ -32,8 +32,8 @@ opts_chunk$set(echo    =!TRUE,
 warn=options()$warn
 options(warn=-1)
 library(ggplot2)
-library(kobe)
-
+library(devtools)
+library(doBy)
 theme_set(theme_bw())
 options(digits=3)
 options(warn=warn)
@@ -47,12 +47,16 @@ options(warn=warn)
 
 [Quick Start](#QuickStart)
 
-
 [More information](#More information)
 
 [References](#References)
 
 # Introduction {#Introduction}
+
+`FLTag` is being developed as part of the Atlantic Ocean Tropical Tuna Tagging Programme (AOTTP) coordinated by the International Commission for the Conservation of Atlantic Tunas (ICCAT). AOTTP is funded by the European Union and other ICCAT Contracting Parties.   
+`FLTag` is aimed at the statistical analysis and visualisation of large-scale oceanographic fish tagging data with current focus being on bigeye, skipjack and yellowfin tunas. In particular it was developed to calculate the key parameters that 
+can be derived from tagging data, important in population assessements; e.g mortality, growth and migration rates. 
+
 
 
 [Back to Top](#top)
@@ -72,52 +76,49 @@ The repos options can be changed depending on personal preferences and includes 
 # Quick Start {#QuickStart}
 
 
-`FLTag` is part of the `FLR` family of packages, you can install the latest version of the FLR packages using the FLR installation script
+`FLTag` is part of the `FLR` family of packages, so you can install the latest version of the FLR packages using the FLR installation script:
 
 
 ```{r src,echo=TRUE,eval=FALSE}
 source("http://flr-project.org/R/instFLR.R")
 ```
 
-or, if you know you have all the necessary dependencies, directly from the repository
+or, if you know you have all the necessary dependencies, directly from the repository:
 
 ```{r inst,echo=TRUE,eval=FALSE}
 install.packages(repos="http://flr-project.org/R")
 ```
 
-To get help please post your questions or suggestions to the FLR mailing list. Conversations can be started at our scrollbak.io room. Bug reports for individual packages can be submitted using their individual github issues page.
+To get help please post your questions or suggestions to the FLR mailing list. Conversations can be started at our scrollbak.io room. Bug reports for individual packages can be submitted using their individual github issues page.  So that users may have a better idea of what functions are available, which one to choose, or where to seek help, this section provides a general overview of the package. In particular it highlights the various elements, what they do, and provides some examples of usage. More details are given in later sections.
 
-
-So that users may have a better idea of what functions are available, which one to choose, or where to seek help, this section provides a general overview of the package. In particular it highlights the various elements, what they do, and provides some examples of usage. More details are given in later sections.
-
-First, load the package:
+First, load the `FLTag` package:
 
 ```{r lib,echo=TRUE}
 library(FLTag)
 ```
 
-There are example datasets for tag releases and recoveries, which are for used for illustration and as test datasets, alternatively users can load their own data.
+There are example datasets for tag releases and recoveries in `FLTag`, which are for used for illustration and as test datasets; alternatively users can load their own tagging data.
 
-```{r data,echo=TRUE}
+```{r load data,echo=TRUE}
 data(releases)
 data(recoveries)
 ```
 
 The releases dataset contains details (e.g. location and time) on the releases of tagged tropical tuna species.
 
-```{r data-rel,echo=TRUE,eval=FALSE}
+```{r data-rel,echo=TRUE,eval=TRUE}
 head(releases)
 ```
 
 Similarly the recoveries data set containts details (e.g. location and time) of when and where those tagged tuna were recovered. 
 
-```{r data-rel,echo=TRUE,eval=FALSE}
+```{r data-rec,echo=TRUE,eval=TRUE}
 head(recoveries)
 ```
 
-There are some strange observations and missing values which we can clean out as follows.
+In tagging databases there are often strange observations and missing values which we can be cleaned out as follows:
 
-```{r data-clean,echo=TRUE,eval=FALSE}
+```{r data-clean,echo=TRUE,eval=TRUE}
 recoveries <- recoveries[!is.na(recoveries$latitude),]
 recoveries <- recoveries[!is.na(recoveries$longitude),]
 releases <- releases[!is.na(releases$latitude),]
@@ -126,14 +127,13 @@ releases <- releases[releases$speciescode %in% c('BET','SKJ','YFT'),]
 releases <- releases[releases$len >=20,]
 ```
 
-
 ### Plotting
 
-Plotting is done using `ggplot2` which provides a powerful alternative paradigm for creating both simple and complex plots in R using the ideas the *Grammar of Graphics* ^[Wilkinson, L. 1999. *The Grammar of Graphics*, Springer. [doi 10.1007/978-3-642-21551-3_13](http://dx.doi.org/10.1007/978-3-642-21551-3_13).] The idea of the grammar is to specify the individual building blocks of a plot and then to combine them to create the graphic desired^[<http://tutorials.iq.harvard.edu/R/Rgraphics/Rgraphics.html>].
+Plotting when analysing data with `FLTag` is best done using `ggplot2`, see *Grammar of Graphics* ^[Wilkinson, L. 1999. *The Grammar of Graphics*, Springer. [doi 10.1007/978-3-642-21551-3_13](http://dx.doi.org/10.1007/978-3-642-21551-3_13).] 
 
-The `ggplot` functions expects a `data.frame` for its first argument, `data`; then a geometric object `geom` that specifies the actual marks put on to a plot and an aesthetic that is "something you can see" have to be provided. Examples of geometic Objects (geom) include points (geom_point, for scatter plots, dot plots, etc), lines (geom_line, for time series, trend lines, etc) and boxplot (geom_boxplot, for, well, boxplots!). Aesthetic mappings are set with the aes() function and, examples include, position (i.e., on the x and y axes), color ("outside" color), fill ("inside" color), shape (of points), linetype and size. 
+The `ggplot` functions expects a `data.frame` for its first argument, `data`; then a geometric object `geom` that specifies the actual marks put on to a plot and an aesthetic that is "something you can see" have to be provided. Examples of geometic Objects (geom) include points (geom_point, for scatter plots, dot plots, etc), lines (geom_line, for time series, trend lines, etc) and boxplot (geom_boxplot, for, well, boxplots!). Aesthetic mappings are set with the aes() function and, examples include, position (i.e., on the x and y axes), color ("outside" color), fill ("inside" color), shape (of points), linetype and size. Usually the first thing we should do prior to any data analysis is to plot the data. 
 
-Usually the first thing we should do prior to any data analysis is to plot the data. Here we plot the location of the releases using `ggplot2` and add a layer for Large Marine Ecosystems and the FAD moratorium 2016 which are built-in to `FLTag`.
+In the context of oceanic fish tagging data we can use `FLTag` to plot the location of conventional tag releases using `ggplot2` and also easily add other geographic layers, e.g. for Large Marine Ecosystems and/or the FAD moratorium 2016 which are built-in to `FLTag`:
 
 
 ```{r plot releases,echo=TRUE}
@@ -155,9 +155,9 @@ geom_point(aes(x=longitude,y=latitude,color=speciescode),data=releases[releases$
   xlab("")+ylab("")
 ```
 
-Similarly we can plot the spatial distribution of the recovered tuna as follows.
+Similarly we can plot the spatial distribution of the recovered tuna as follows:
 
-```{r plot releases,echo=TRUE}
+```{r plot recoveries,echo=TRUE}
 world <- map_data('world')
 recoveries$speciescode <- releases$speciescode[match(recoveries$specimenid,releases$specimenid)] # assumes the species identified by the tagger during release was correct
 ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group))+
@@ -174,9 +174,9 @@ geom_point(aes(x=longitude,y=latitude,color=speciescode),data=recoveries[recover
 
 ### Merging tag releases and recoveries
 
-Merging the tag release data to the tag recovery table is then essential for estimating important parameters such as growth, mortality and migration. In the following the data are organised in a series of pairs of status release and recovery.
+Merging the tag release data to the tag recovery table is then essential for estimating important parameters such as growth, mortality and migration. In the following code the tag release and recovery data are organised in a series of pairs by tag code ID and then grouped by status of *release* and *recovery*:
 
-```{r adding on release data to recoveries table and ploting length-frequency densities by species ,echo=TRUE}
+```{r merging release and recoveries tables,eval=TRUE,echo=TRUE}
 
 library(doBy)
 all<- merge(data.frame(recoveries[,c("specimenid","ctcode1","speciescode","date","latitude","longitude","len")]),
@@ -193,7 +193,6 @@ d_len <- tapply(all$len,all$ctcode,diff)
 reliable_len <- names(d_len)[d_len >= 0]
 all$status <- rep(c('release','recovery'),length(all[,1])/2)
 
-
 # LFs of releases versus recoveries 
 
 ggplot(all[all$speciescode %in% c('BET','LTA','SKJ','YFT'),], 
@@ -201,13 +200,12 @@ ggplot(all[all$speciescode %in% c('BET','LTA','SKJ','YFT'),],
   xlim(30,120)+
    facet_wrap(~ speciescode, ncol=2)
 
-
 ```
 
-An example of plotting vectors of movement arrows using ggplot2. Note the substantial migrations of skipjack from the Azores.
+This allows us to plot length-frenquency distributions of released versus recovered fish giving an idea of growth. 
+Similarly the merged data can be used to plot vectors of migration arrows, between release and recovery, using ggplot2. Note the substantial migrations of skipjack from the Azores to the waters of Senegal:
 
-```{r skj vectors,echo=TRUE,eval=FALSE}
-
+```{r skj arrows,echo=TRUE,eval=TRUE}
 
 ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group)) +
   coord_fixed(1,xlim=c(-32.5,-12.5),ylim=c(5,40))+
@@ -231,6 +229,7 @@ ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group)) +
 * Or send a pull request to <https://github.com/flr/FLPKG/>
 * For more information on the FLR Project for Quantitative Fisheries Science in R, visit the FLR webpage ^[<http://flr-project.org>].
 * The latest version of `FLPKG` can always be installed using the `devtools` package, by calling
+
 ```{r, devtools, echo=TRUE, eval=FALSE}
 	library(devtools)
 	install_github('flr/FLPKG')
