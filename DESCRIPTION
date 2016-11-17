@@ -1,11 +1,15 @@
 Package: FLTag
 Title: Biomass Dynamic Models
+Title: Oceaninc Fish Tagging
 Version: 0.1.1
 Author: Laurence Kell
-Description: Fits Fox, Brownie & Petersen
 Depends: methods, R(>= 2.7.1), FLCore(>= 2.0), ggplot2, FLash(>= 0.7)
 LinkingTo: FLash
 Maintainer: Laurence Kell <l.kell@cefas.co.uk>
+Description: Analyses, explores and plots ocean fish tagging data
+Depends: R(>= 3.1.0),methods, FLCore(>= 2.0), ggplot2, FLash(>= 0.7)
+LinkingTo:FLash
+Maintainer: Laurence Kell <laurie@kell.es>
 License: GPL 2 or above
 Collate:  
 	classFLTag.R   
@@ -13,13 +17,19 @@ Collate:
 	methodsFLTag.R
 	coerceFLTag.R  
 	createAccessorsFLTag.R
+<<<<<<< HEAD
 	releases.R
 	recoveries.R 
+=======
+        releases.R
+        recoveries.R
+>>>>>>> 7409845c5b69dffb5476927f171ef32b30b80ea4
 VignetteBuilder: 
     knitr
 Depends:
     R(>= 3.0.1),
     methods
+Depends:R(>= 3.1.0),methods
 Suggests:
     knitr,
     rmarkdown

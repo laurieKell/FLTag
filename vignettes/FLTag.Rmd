@@ -1,6 +1,6 @@
 ---
-title: "Tagging package"
-author: "Dougie Kell, Laurie Beare"
+title: "Ocean Fish Tagging Package"
+author: "Dougie Beare, Laurie Kell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: rmarkdown:::html_document
 vignette: >
@@ -23,8 +23,8 @@ opts_chunk$set(echo    =!TRUE,
                message =FALSE,
                tidy    =FALSE,
                warnings=FALSE,
-               fig.height=4.5,
-               fig.width =4.5)
+               fig.height=7,
+               fig.width =7)
 ```
 
 
@@ -32,8 +32,8 @@ opts_chunk$set(echo    =!TRUE,
 warn=options()$warn
 options(warn=-1)
 library(ggplot2)
-library(kobe)
-
+library(devtools)
+library(doBy)
 theme_set(theme_bw())
 options(digits=3)
 options(warn=warn)
@@ -47,22 +47,26 @@ options(warn=warn)
 
 [Quick Start](#QuickStart)
 
-
 [More information](#More information)
 
 [References](#References)
 
 # Introduction {#Introduction}
 
+`FLTag` is being developed as part of the Atlantic Ocean Tropical Tuna Tagging Programme (AOTTP) coordinated by the International Commission for the Conservation of Atlantic Tunas (ICCAT). AOTTP is funded by the European Union and other ICCAT Contracting Parties.   
+`FLTag` is aimed at the statistical analysis and visualisation of large-scale oceanographic fish tagging data with current focus being on bigeye, skipjack and yellowfin tunas. In particular it was developed to calculate the key parameters that 
+can be derived from tagging data, important in population assessements; e.g mortality, growth and migration rates. 
+
+
 
 [Back to Top](#top)
 
 # Installation {#Installation}
 
-The simplest way to obtain `FLTage` is to install it from CRAN by using the following command in the R console:
+The simplest way to obtain `FLTag` is to install it from CRAN by using the following command in the R console:
 
 ```{r install,echo=TRUE,eval=FALSE}
-install.packages("FLTage", repos = "http://cloud.r-project.org/")
+install.packages("FLTag", repos = "http://cloud.r-project.org/")
 ```
 
 The repos options can be changed depending on personal preferences and includes options such as choosing the directories in which to install the packages see help(install.packages) for more details.
@@ -72,82 +76,149 @@ The repos options can be changed depending on personal preferences and includes 
 # Quick Start {#QuickStart}
 
 
-`FLTag` is part of the `FLR` family of packages, you can install the latest version of the FLR packages using the FLR installation script
+`FLTag` is part of the `FLR` family of packages, so you can install the latest version of the FLR packages using the FLR installation script:
 
 
 ```{r src,echo=TRUE,eval=FALSE}
 source("http://flr-project.org/R/instFLR.R")
 ```
 
-or, if you know you have all the necessary dependencies, directly from the repository
+or, if you know you have all the necessary dependencies, directly from the repository:
 
 ```{r inst,echo=TRUE,eval=FALSE}
 install.packages(repos="http://flr-project.org/R")
 ```
 
-To get help please post your questions or suggestions to the FLR mailing list. Conversations can be started at our scrollbak.io room. Bug reports for individual packages can be submitted using their individual github issues page.
+To get help please post your questions or suggestions to the FLR mailing list. Conversations can be started at our scrollbak.io room. Bug reports for individual packages can be submitted using their individual github issues page.  So that users may have a better idea of what functions are available, which one to choose, or where to seek help, this section provides a general overview of the package. In particular it highlights the various elements, what they do, and provides some examples of usage. More details are given in later sections.
 
-
-So that users may have a better idea of what functions are available, which one to choose, or where to seek help, this section provides a general overview of the package. In particular it highlights the various elements, what they do, and provides some examples of usage. More details are given in later sections.
-
-First, load the package:
+First, load the `FLTag` package:
 
 ```{r lib,echo=TRUE}
 library(FLTag)
 ```
 
-There are example datasets for tag releases and recoveries, which are for used for illustration and as test datasets, alternatively users can load their own data.
+There are example datasets for tag releases and recoveries in `FLTag`, which are for used for illustration and as test datasets; alternatively users can load their own tagging data.
 
-```{r data,echo=TRUE}
+```{r load data,echo=TRUE}
 data(releases)
-
 data(recoveries)
 ```
 
-The datasets contains 
+The releases dataset contains details (e.g. location and time) on the releases of tagged tropical tuna species.
 
-```{r data-rel,echo=TRUE,eval=FALSE}
+```{r data-rel,echo=TRUE,eval=TRUE}
 head(releases)
+```
+
+Similarly the recoveries data set containts details (e.g. location and time) of when and where those tagged tuna were recovered. 
+
+```{r data-rec,echo=TRUE,eval=TRUE}
+head(recoveries)
+```
+
+In tagging databases there are often strange observations and missing values which we can be cleaned out as follows:
+
+```{r data-clean,echo=TRUE,eval=TRUE}
+recoveries <- recoveries[!is.na(recoveries$latitude),]
+recoveries <- recoveries[!is.na(recoveries$longitude),]
+releases <- releases[!is.na(releases$latitude),]
+releases <- releases[!is.na(releases$longitude),]
+releases <- releases[releases$speciescode %in% c('BET','SKJ','YFT'),]
+releases <- releases[releases$len >=20,]
 ```
 
 ### Plotting
 
-Plotting is done using `ggplot2` which provides a powerful alternative paradigm for creating both simple and complex plots in R using the ideas the *Grammar of Graphics* ^[Wilkinson, L. 1999. *The Grammar of Graphics*, Springer. [doi 10.1007/978-3-642-21551-3_13](http://dx.doi.org/10.1007/978-3-642-21551-3_13).] The idea of the grammar is to specify the individual building blocks of a plot and then to combine them to create the graphic desired^[<http://tutorials.iq.harvard.edu/R/Rgraphics/Rgraphics.html>].
+Plotting when analysing data with `FLTag` is best done using `ggplot2`, see *Grammar of Graphics* ^[Wilkinson, L. 1999. *The Grammar of Graphics*, Springer. [doi 10.1007/978-3-642-21551-3_13](http://dx.doi.org/10.1007/978-3-642-21551-3_13).] 
 
-The `ggplot` functions expects a `data.frame` for its first argument, `data`; then a geometric object `geom` that specifies the actual marks put on to a plot and an aesthetic that is "something you can see" have to be provided. Examples of geometic Objects (geom) include points (geom_point, for scatter plots, dot plots, etc), lines (geom_line, for time series, trend lines, etc) and boxplot (geom_boxplot, for, well, boxplots!). Aesthetic mappings are set with the aes() function and, examples include, position (i.e., on the x and y axes), color ("outside" color), fill ("inside" color), shape (of points), linetype and size. 
+The `ggplot` functions expects a `data.frame` for its first argument, `data`; then a geometric object `geom` that specifies the actual marks put on to a plot and an aesthetic that is "something you can see" have to be provided. Examples of geometic Objects (geom) include points (geom_point, for scatter plots, dot plots, etc), lines (geom_line, for time series, trend lines, etc) and boxplot (geom_boxplot, for, well, boxplots!). Aesthetic mappings are set with the aes() function and, examples include, position (i.e., on the x and y axes), color ("outside" color), fill ("inside" color), shape (of points), linetype and size. Usually the first thing we should do prior to any data analysis is to plot the data. 
+
+In the context of oceanic fish tagging data we can use `FLTag` to plot the location of conventional tag releases using `ggplot2` and also easily add other geographic layers, e.g. for Large Marine Ecosystems and/or the FAD moratorium 2016 which are built-in to `FLTag`:
 
 
-```{r kpp,echo=TRUE}
+```{r plot releases,echo=TRUE}
+library(ggplot2)
+world <- map_data('world')
+data("lme")
+data("fadmoratorium")
+
+ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group))+
+  geom_polygon(data=lme,aes(x=long,y=lat,group=group),color='darkgreen',fill=NA,size=0.5)+
+  geom_polygon(data=fadmoratorium,aes(x=long,y=lat,group=group),color='darkblue',size=0.5) +
+  coord_fixed(1.3,xlim=c(-40,20),ylim=c(-10,40))+
+geom_point(aes(x=longitude,y=latitude,color=speciescode),data=releases[releases$speciescode %in% c('BET','SKJ','YFT'),]
+             ,alpha=0.5,size=0.5) +
+  theme(plot.margin=unit(c(0,0,0,0),"cm"),
+        axis.text.x =element_text(colour="grey20",size=15,face="plain"),
+        axis.text.y=element_text(colour="grey20",size=15,face="plain"),
+        axis.title.y=element_text(size=15))+
+  xlab("")+ylab("")
 ```
 
-### Split-apply-combine 
+Similarly we can plot the spatial distribution of the recovered tuna as follows:
 
-`kobe` contains a variety of functions to summarise assessment results. These can be used with the plyr package to provide summaries by scenario and year. plyr has methods for running split-apply-combine procedures, e.g. first splitting a dataset into subsets, then running a function for each subset and then recombining the results back into a single object.
+```{r plot recoveries,echo=TRUE}
+world <- map_data('world')
+recoveries$speciescode <- releases$speciescode[match(recoveries$specimenid,releases$specimenid)] # assumes the species identified by the tagger during release was correct
+ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group))+
+  coord_fixed(1.3,xlim=c(-40,20),ylim=c(-10,40))+
+geom_point(aes(x=longitude,y=latitude,color=speciescode),data=recoveries[recoveries$speciescode %in% c('BET','SKJ','YFT'),],alpha=1,size=.25)+
+  theme(plot.margin=unit(c(0,0,0,0),"cm"),
+        axis.text.x =element_text(colour="grey20",size=15,face="plain"),
+        axis.text.y=element_text(colour="grey20",size=15,face="plain"),
+        axis.title.y=element_text(size=15))+
+  xlab("")+ylab("")
 
-```{r plyr,echo=TRUE}
 ```
 
-An example of estimating the quantiles of the current estimates of stock status by method and scenario
-```{r plyr2,echo=TRUE,eval=FALSE}
-trks=ddply(yft, .(method,scenario), with, quantile(stock))
+
+### Merging tag releases and recoveries
+
+Merging the tag release data to the tag recovery table is then essential for estimating important parameters such as growth, mortality and migration. In the following code the tag release and recovery data are organised in a series of pairs by tag code ID and then grouped by status of *release* and *recovery*:
+
+```{r merging release and recoveries tables,eval=TRUE,echo=TRUE}
+
+library(doBy)
+all<- merge(data.frame(recoveries[,c("specimenid","ctcode1","speciescode","date","latitude","longitude","len")]),
+data.frame(releases[,c("specimenid","ctcode1","speciescode","date","latitude","longitude","len")]),all=T) # merge recoveries and releases
+
+all<- all[all$speciescode %in% c('BET','LTA','SKJ','YFT'),]
+x <- table(all$ctcode1);
+x <- x[x==2]
+all <- all[all$ctcode1 %in% names(x),]
+all<- orderBy(~ctcode1+speciescode+date,data=all)
+prob.tags <- c(7124,10410,10585,10374,1093,1013,1039)
+all <- all[!c(all$ctcode %in% prob.tags),]
+d_len <- tapply(all$len,all$ctcode,diff)
+reliable_len <- names(d_len)[d_len >= 0]
+all$status <- rep(c('release','recovery'),length(all[,1])/2)
+
+# LFs of releases versus recoveries 
+
+ggplot(all[all$speciescode %in% c('BET','LTA','SKJ','YFT'),], 
+       aes(x=len,group=status,color=status,fill=status)) + geom_density(alpha=0.5)+
+  xlim(30,120)+
+   facet_wrap(~ speciescode, ncol=2)
+
 ```
 
-plyr functions have a simple naming convention. The first two letters of the function tells the input and output data types, respectively. The one above takes a data.frame and returns a data.frame. 
+This allows us to plot length-frenquency distributions of released versus recovered fish giving an idea of growth. 
+Similarly the merged data can be used to plot vectors of migration arrows, between release and recovery, using ggplot2. Note the substantial migrations of skipjack from the Azores to the waters of Senegal:
 
-```{r plyr3,echo=TRUE,eval=FALSE}
-trks=ddply(yft, .(method,scenario,year), with, quantile(stock))
+```{r skj arrows,echo=TRUE,eval=TRUE}
 
-head(trks)
+ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group)) +
+  coord_fixed(1,xlim=c(-32.5,-12.5),ylim=c(5,40))+
+  facet_wrap(~ speciescode, ncol=2) +
+  geom_path(data=all,aes(x=longitude,y=latitude,group=specimenid,color=speciescode),
+            arrow = arrow(length = unit(0.1,"cm")),size=.25,alpha=.5) +
+  #geom_point(data=releases[releases$speciescode %in% c('BET','LTA','SKJ','YFT'),],
+   #          aes(x=longitude,y=latitude,group=specimenid),color='darkgreen',size=.01) +
+  xlab("")+ylab("")
+
 ```
 
-The first argument, yft, is the input data frame and contains all the data from the last year in the assessment. The next argument are the variables to subset by over which the statistics will be computed, and the third processes the data.frame by each subset. `with` creates an environment constructed from data in which to run `quantile`. 
 
-```{r plyr4,echo=TRUE,eval=FALSE}
-head(trks)
-```
-
-```{r plyr5,echo=TRUE,fig.height=4,fig.width=8,}
-```
 
 [Back to Top](#top)
 
@@ -158,6 +229,7 @@ head(trks)
 * Or send a pull request to <https://github.com/flr/FLPKG/>
 * For more information on the FLR Project for Quantitative Fisheries Science in R, visit the FLR webpage ^[<http://flr-project.org>].
 * The latest version of `FLPKG` can always be installed using the `devtools` package, by calling
+
 ```{r, devtools, echo=TRUE, eval=FALSE}
 	library(devtools)
 	install_github('flr/FLPKG')
