@@ -2,9 +2,8 @@ Package: FLTag
 Title: Oceaninc Fish Tagging
 Version: 0.1.1
 Author: Laurence Kell
-Description: Analyses, explores and plots ocean fish tagging data. Fits Fox, Brownie & Petersen
-Depends: R(>= 3.1.0),methods, FLCore(>= 2.0), ggplot2, FLash(>= 0.7)
-LinkingTo:FLash
+Description: Analyses, explores and plots ocean fish tagging data. Fits Fox, Brownie & Petersen.
+Depends: R(>= 3.1.0),methods, FLCore(>= 2.0), ggplot2
 Maintainer: Laurence Kell <laurie@kell.es>
 License: GPL 2 or above
 Collate:  
@@ -17,7 +16,6 @@ Collate:
 	recoveries.R 
 VignetteBuilder: 
     knitr
-Depends:R(>= 3.1.0),methods
 Suggests:
     knitr,
     rmarkdown
