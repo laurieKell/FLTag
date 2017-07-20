@@ -145,7 +145,7 @@ data("fadmoratorium")
 ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group))+
   geom_polygon(data=lme,aes(x=long,y=lat,group=group),color='darkgreen',fill=NA,size=0.5)+
   geom_polygon(data=fadmoratorium,aes(x=long,y=lat,group=group),color='darkblue',size=0.5) +
-  coord_fixed(1.3,xlim=c(-40,20),ylim=c(-10,40))+
+  coord_fixed(1.3,xlim=c(-50,30),ylim=c(-40,40))+
 geom_point(aes(x=longitude,y=latitude,color=speciescode),data=releases[releases$speciescode %in% c('BET','SKJ','YFT'),]
              ,alpha=0.5,size=0.5) +
   theme(plot.margin=unit(c(0,0,0,0),"cm"),
@@ -161,7 +161,7 @@ Similarly we can plot the spatial distribution of the recovered tuna as follows:
 world <- map_data('world')
 recoveries$speciescode <- releases$speciescode[match(recoveries$specimenid,releases$specimenid)] # assumes the species identified by the tagger during release was correct
 ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group))+
-  coord_fixed(1.3,xlim=c(-40,20),ylim=c(-10,40))+
+   coord_fixed(1.3,xlim=c(-50,30),ylim=c(-40,40))+
 geom_point(aes(x=longitude,y=latitude,color=speciescode),data=recoveries[recoveries$speciescode %in% c('BET','SKJ','YFT'),],alpha=1,size=.25)+
   theme(plot.margin=unit(c(0,0,0,0),"cm"),
         axis.text.x =element_text(colour="grey20",size=15,face="plain"),
@@ -179,8 +179,16 @@ Merging the tag release data to the tag recovery table is then essential for est
 ```{r merging release and recoveries tables,eval=TRUE,echo=TRUE}
 
 library(doBy)
-all<- merge(data.frame(recoveries[,c("specimenid","ctcode1","speciescode","date","latitude","longitude","len")]),
-data.frame(releases[,c("specimenid","ctcode1","speciescode","date","latitude","longitude","len")]),all=T) # merge recoveries and releases
+
+recs <- data.frame(recoveries[,c("specimenid","ctcode1","speciescode","recovery_date","latitude","longitude","len")])
+dimnames(recs)[[2]][4] <- 'date'
+
+rels <- data.frame  (releases[,c("specimenid","ctcode1","speciescode","release_date","latitude","longitude","len")])
+dimnames(rels)[[2]][4]<- 'date'
+
+all <- merge(recs,rels,all=T)
+
+
 
 all<- all[all$speciescode %in% c('BET','LTA','SKJ','YFT'),]
 x <- table(all$ctcode1);
@@ -206,14 +214,14 @@ This allows us to plot length-frenquency distributions of released versus recove
 Similarly the merged data can be used to plot vectors of migration arrows, between release and recovery, using ggplot2. Note the substantial migrations of skipjack from the Azores to the waters of Senegal:
 
 ```{r skj arrows,echo=TRUE,eval=TRUE}
-
+all1 <- all[all$latitude !=0,]
 ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group)) +
-  coord_fixed(1,xlim=c(-32.5,-12.5),ylim=c(5,40))+
-  facet_wrap(~ speciescode, ncol=2) +
-  geom_path(data=all,aes(x=longitude,y=latitude,group=specimenid,color=speciescode),
+  coord_fixed(1.3,xlim=c(-60,30),ylim=c(-40,40))  +
+  geom_path(data=all1,aes(x=longitude,y=latitude,group=specimenid,color=speciescode),
             arrow = arrow(length = unit(0.1,"cm")),size=.25,alpha=.5) +
-  #geom_point(data=releases[releases$speciescode %in% c('BET','LTA','SKJ','YFT'),],
-   #          aes(x=longitude,y=latitude,group=specimenid),color='darkgreen',size=.01) +
+  facet_wrap(~ speciescode, ncol=2) +
+  geom_point(data=releases[releases$speciescode %in% c('BET','LTA','SKJ','YFT'),],
+          aes(x=longitude,y=latitude,group=specimenid),color='darkgreen',size=.01) +
   xlab("")+ylab("")
 
 ```

@@ -7,47 +7,107 @@ library(RODBC)
 
 #2. Connect to database
 
-aottp <- odbcConnect("aottp-servigis", case="postgresql", believeNRows=FALSE)
+aottp <- odbcConnect("aottp-local", case="postgresql", believeNRows=FALSE)
 
-#3. Get releases 
+#3. Get IOTC data
+
+iotc <- read.table('/home/dbeare/Dropbox/AOTTP/Data/IOTC/IOTC_tagging.csv',header=T, sep="|",skip=2)
+sqlSave(aottp,iotc,table='iotc')
+
+iotc <- sqlQuery(aottp,"SELECT * FROM iotc;")
+
+iotc <- iotc[,-1]
+
+save (iotc,file='/home/dbeare/FLTag/data/iotc.RData',compress="gzip")
+
+
+#4. Get AOTTP releases and recoveries
 
 releases <- sqlQuery(aottp, "SELECT * from releases;")
+recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
 
-#4. Prune the data
+#5. Prune the data
 
-releases <- releases[,c(2,4,9,12,15,16,17,18,21,25,26,52)]
+releases <- data.frame(speciescode = releases$speciescode,rcstagecode=releases$rcstagecode,ctcode1=releases$ctcode1,ctcode2=releases$ctcode2,latitude=releases$latitude,
+                       longitude=releases$longitude,gearcode=releases$gearcode,depth=releases$depth,len=releases$len,specimenid=releases$specimenid, date=releases$date,time=releases$time)
 
-# Format the columns properly
+## Format the columns properly
 releases$speciescode <- as.character(releases$speciescode)
 releases$rcstagecode <- as.character(releases$rcstagecode)
 releases$release_date <- strptime(paste(releases$date,releases$time), format = "%Y-%m-%d %H:%M:%S") 
-releases <- releases[,-c(5,6)]
+releases <- releases[,-c(11,12)]
 releases$gearcode <- as.character(releases$gearcode)
-dimnames(releases)[[2]] <- c("speciescode","rcstagecode","ctcode1","ctcode2","latitude","longitude","gearcode","depth","len",         
-"specimenid","date")
 
-#5. Get recoveries
+#6. Get recoveries
 
 recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
 
-#6. Prune the recoveries
+#7. Prune the recoveries
 
-recoveries<- recoveries[,c(2,5,10,13,16,17,18,19,22,26)]
+recoveries<- data.frame(speciescode = recoveries$speciescode,rcstagecode=recoveries$rcstagecode,ctcode1=recoveries$ctcode1,ctcode2=recoveries$ctcode2,latitude=recoveries$latitude,
+                        longitude=recoveries$longitude,gearcode=recoveries$gearcode,len=recoveries$len,specimenid=recoveries$specimenid, date=recoveries$date,time=recoveries$time)
 
-
-# Format the columns properly
 
 recoveries$rcstagecode <- as.character(recoveries$rcstagecode)
 recoveries$recovery_date <- strptime(paste(recoveries$date,recoveries$time), format = "%Y-%m-%d %H:%M:%S") 
-recoveries <- recoveries[,-c(5,6)]
+recoveries <- recoveries[,-c(10,11)]
 recoveries$gearcode <- as.character(recoveries$gearcode)
-dimnames(recoveries)[[2]] <- c("specimenid","rcstagecode","ctcode1","ctcode2","latitude","longitude","gearcode",
-                               "len","date")
 
 #7. Save the data 
 
 save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
 save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
+
+#8. Get historical ICCAT releases and recoveries 
+
+releases.past <- sqlQuery(aottp, "SELECT * from re_iccat_all;")
+
+releases.past <- data.frame(speciescode = releases.past$speciescode,rcstagecode=releases.past$rcstagecode,ctcode1=releases.past$ctcode1,ctcode2=releases.past$ctcode2,latitude=releases.past$latitude,
+                       longitude=releases.past$longitude,gearcode=releases.past$gearcode,depth=releases.past$depth,len=releases.past$len,specimenid=releases.past$specimenid, date=releases.past$date,time=releases.past$time)
+
+## Format the columns properly
+releases.past$speciescode <- as.character(releases.past$speciescode)
+releases.past$rcstagecode <- as.character(releases.past$rcstagecode)
+releases.past$release_date <- strptime(paste(releases.past$date,releases.past$time), format = "%Y-%m-%d %H:%M:%S") 
+releases.past <- releases.past[,-c(11,12)]
+releases.past$gearcode <- as.character(releases.past$gearcode)
+
+
+recoveries.past <- sqlQuery(aottp, "SELECT * from rc_iccat_all;")
+
+recoveries<- data.frame(speciescode = recoveries$speciescode,rcstagecode=recoveries$rcstagecode,ctcode1=recoveries$ctcode1,ctcode2=recoveries$ctcode2,latitude=recoveries$latitude,
+                        longitude=recoveries$longitude,gearcode=recoveries$gearcode,len=recoveries$len,specimenid=recoveries$specimenid, date=recoveries$date,time=recoveries$time)
+
+
+recoveries$rcstagecode <- as.character(recoveries$rcstagecode)
+recoveries$recovery_date <- strptime(paste(recoveries$date,recoveries$time), format = "%Y-%m-%d %H:%M:%S") 
+recoveries <- recoveries[,-c(10,11)]
+recoveries$gearcode <- as.character(recoveries$gearcode)
+
+
+
+
+
+
+
+
+## Format the columns properly
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Shapefiles ##
