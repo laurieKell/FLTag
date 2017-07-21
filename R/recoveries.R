@@ -1,6 +1,6 @@
 #' recoveries
 #' 
-#' Recoveries of tropical tuna in the Atlantic Ocean (example dataset from Atlantic Ocean Tropical Tuna Programme 2015-2020).
+#' Recoveries of tropical tuna in the Atlantic Ocean (example dataset from Historical ICCAT Database and the Atlantic Ocean Tropical Tuna Programme 2015-2020).
 #'
 #' @format A \code{data.frame}
 #' \describe{

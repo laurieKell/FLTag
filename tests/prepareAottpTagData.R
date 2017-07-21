@@ -23,8 +23,7 @@ save (iotc,file='/home/dbeare/FLTag/data/iotc.RData',compress="gzip")
 
 #4. Get AOTTP releases and recoveries
 
-releases <- sqlQuery(aottp, "SELECT * from releases;")
-recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
+releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled ='false';") # Get ALL the data
 
 #5. Prune the data
 
@@ -34,77 +33,68 @@ releases <- data.frame(speciescode = releases$speciescode,rcstagecode=releases$r
 ## Format the columns properly
 releases$speciescode <- as.character(releases$speciescode)
 releases$rcstagecode <- as.character(releases$rcstagecode)
-releases$release_date <- strptime(paste(releases$date,releases$time), format = "%Y-%m-%d %H:%M:%S") 
-releases <- releases[,-c(11,12)]
+releases$date <- strptime(releases$date, format = "%Y-%m-%d")
+releases$time <- as.character(releases$time) 
 releases$gearcode <- as.character(releases$gearcode)
 
-#6. Get recoveries
+#6. Recoveries
 
 recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
 
 #7. Prune the recoveries
 
 recoveries<- data.frame(speciescode = recoveries$speciescode,rcstagecode=recoveries$rcstagecode,ctcode1=recoveries$ctcode1,ctcode2=recoveries$ctcode2,latitude=recoveries$latitude,
-                        longitude=recoveries$longitude,gearcode=recoveries$gearcode,len=recoveries$len,specimenid=recoveries$specimenid, date=recoveries$date,time=recoveries$time)
+                        longitude=recoveries$longitude,gearcode=recoveries$gearcode,depth=rep(NA,length(recoveries[,1])),len=recoveries$len,specimenid=recoveries$specimenid, date=recoveries$date,time=recoveries$time)
 
 
 recoveries$rcstagecode <- as.character(recoveries$rcstagecode)
-recoveries$recovery_date <- strptime(paste(recoveries$date,recoveries$time), format = "%Y-%m-%d %H:%M:%S") 
-recoveries <- recoveries[,-c(10,11)]
+recoveries$date <- strptime(recoveries$date, format = "%Y-%m-%d") 
+recoveries$time <- as.character(recoveries$time)
 recoveries$gearcode <- as.character(recoveries$gearcode)
-
-#7. Save the data 
-
-save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
-save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
 
 #8. Get historical ICCAT releases and recoveries 
 
+## releases
 releases.past <- sqlQuery(aottp, "SELECT * from re_iccat_all;")
-
-releases.past <- data.frame(speciescode = releases.past$speciescode,rcstagecode=releases.past$rcstagecode,ctcode1=releases.past$ctcode1,ctcode2=releases.past$ctcode2,latitude=releases.past$latitude,
+releases.past <- data.frame(speciescode = releases.past$speciescode,rcstagecode=releases.past$rcstage,ctcode1=releases.past$ctcode1,ctcode2=releases.past$ctcode2,latitude=releases.past$latitude,
                        longitude=releases.past$longitude,gearcode=releases.past$gearcode,depth=releases.past$depth,len=releases.past$len,specimenid=releases.past$specimenid, date=releases.past$date,time=releases.past$time)
 
 ## Format the columns properly
 releases.past$speciescode <- as.character(releases.past$speciescode)
 releases.past$rcstagecode <- as.character(releases.past$rcstagecode)
-releases.past$release_date <- strptime(paste(releases.past$date,releases.past$time), format = "%Y-%m-%d %H:%M:%S") 
-releases.past <- releases.past[,-c(11,12)]
+releases.past$date <- strptime(releases.past$date, format = "%Y-%m-%d") 
+releases.past$time <-as.character(releases.past$time)
 releases.past$gearcode <- as.character(releases.past$gearcode)
 
-
+# Recoveries
 recoveries.past <- sqlQuery(aottp, "SELECT * from rc_iccat_all;")
 
-recoveries<- data.frame(speciescode = recoveries$speciescode,rcstagecode=recoveries$rcstagecode,ctcode1=recoveries$ctcode1,ctcode2=recoveries$ctcode2,latitude=recoveries$latitude,
-                        longitude=recoveries$longitude,gearcode=recoveries$gearcode,len=recoveries$len,specimenid=recoveries$specimenid, date=recoveries$date,time=recoveries$time)
+recoveries.past<- data.frame(speciescode = recoveries.past$speciescode,rcstagecode=recoveries.past$rcstagecode,ctcode1=recoveries.past$ctcode1,ctcode2=recoveries.past$ctcode2,latitude=recoveries.past$latitude,
+                        longitude=recoveries.past$longitude,depth=rep(NA,length(recoveries.past[,1])),gearcode=recoveries.past$gearcode,len=recoveries.past$len,specimenid=recoveries.past$specimenid, 
+                        date=recoveries.past$date,time=recoveries.past$time)
 
 
-recoveries$rcstagecode <- as.character(recoveries$rcstagecode)
-recoveries$recovery_date <- strptime(paste(recoveries$date,recoveries$time), format = "%Y-%m-%d %H:%M:%S") 
-recoveries <- recoveries[,-c(10,11)]
-recoveries$gearcode <- as.character(recoveries$gearcode)
+recoveries.past$rcstagecode <- as.character(recoveries.past$rcstagecode)
+recoveries.past$date <- strptime(recoveries.past$date, format = "%Y-%m-%d") 
+recoveries.past$time <- as.character(recoveries.past$time)
+recoveries.past$gearcode <- as.character(recoveries.past$gearcode)
 
 
+# Combine the old with the new
 
+releases <- rbind(releases,releases.past)
+recoveries <- rbind(recoveries,recoveries.past)
 
+releases$depth <- ifelse(releases$depth==0,NA,releases$depth)
 
-
-
-
-## Format the columns properly
-
-
-
-
-
+# Look at the stagecodes ?
 
 
 
+#7. Save the data 
 
-
-
-
-
+save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
+save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
 
 
 
@@ -168,11 +158,22 @@ fadmoratorium <- readOGR("/home/dbeare/fadmoratorium",layer="fadmoratorium")
 
 save(fadmoratorium,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
 
+#5. Shapefile of seas/oceans
 
+seas <- readOGR("/media/aottp/AOTTP/DataExploration/GISData/seas/World_Seas.shp", "World_Seas")
 
+proj4string(seas) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
+save(seas,file='/home/dbeare/FLTag/data/seas.RData',compress="xz")
 
-
+# 
+# As part of the validation process data are placed in the following three categories:
+# 
+# 1. Fully documented and validated (both release and recoveries with precise geographic locations, correct species identifications and sensible lengths)
+# 
+# 2. Validated movement (both release and recoveries with precise geographic locations and correct species identifications)
+# 
+# 3. Validated growth (both release and recoveries with exact dates and reliable lengths)
 
 
 
