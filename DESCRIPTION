@@ -12,8 +12,8 @@ Collate:
 	methodsFLTag.R
 	coerceFLTag.R  
 	createAccessorsFLTag.R
-	releases.R
-	recoveries.R
+	releases.RData
+	recoveries.RData
 	formatTagdata.R
 	lenW_BET.R
 	lenW_SKJ.R
