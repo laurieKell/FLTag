@@ -88,8 +88,8 @@ releases$depth <- ifelse(releases$depth==0,NA,releases$depth)
 
 # 9. Save the data 
 
-save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
-save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
+save (releases,file='/home/dbeare/FLTag/data/aottp_releases.RData',compress="gzip")
+save (recoveries,file='/home/dbeare/FLTag/data/aottp_recoveries.RData',compress="gzip")
 
 ## Shapefiles ##
 
