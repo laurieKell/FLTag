@@ -86,7 +86,7 @@ releases$depth <- ifelse(releases$depth==0,NA,releases$depth)
 
 # Look at the stagecodes ?
 
-9. Save the data 
+# 9. Save the data 
 
 save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
 save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
