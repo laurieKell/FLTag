@@ -13,7 +13,15 @@ Collate:
 	coerceFLTag.R  
 	createAccessorsFLTag.R
 	releases.R
-	recoveries.R 
+	recoveries.R
+	formatTagdata.R
+	lenW_BET.R
+	lenW_SKJ.R
+	lenW_YFT.R
+	lenW_LTA.R
+	matchTagsA.R
+	spatialVectors.R
+	timeVectors.R
 VignetteBuilder: 
     knitr
 Suggests:
