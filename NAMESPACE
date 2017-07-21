@@ -1,5 +1,14 @@
 export("summary",
-       "show")
+       "show",
+       "formatTagdata",
+       "lenW_BET",
+	"lenW_SKJ",
+	"lenW_YFT",
+	"lenW_LTA",
+	"matchTagsA",
+	"spatialVectors",
+	"timeVectors",
+	"tagDataValidation")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",

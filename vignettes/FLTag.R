@@ -35,7 +35,6 @@ library(FLTag)
 
 ## ----data,echo=TRUE------------------------------------------------------
 data(releases)
-
 data(recoveries)
 
 ## ----data-rel,echo=TRUE,eval=FALSE---------------------------------------

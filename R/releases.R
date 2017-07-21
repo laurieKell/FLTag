@@ -4,7 +4,7 @@
 #'
 #' @format A \code{data.frame}
 #' \describe{
-#'   \item{rel_speciescode}{ICCAT 3 letter species codes recorded at release \code{factor}}
+#'   \item{speciescode}{ICCAT 3 letter species codes recorded at release \code{factor}}
 #'   \item{rcstagecode}{Stage \code{factor}}
 #'   \item{ctcode1}{ Conventional tag code 1\code{numeric}}
 #'   \item{ctcode2}{ Conventional tag code 2\code{numeric}}
@@ -15,6 +15,7 @@
 #'   \item{len}{Length of fish recorded at release \code{numeric}}
 #'   \item{specimenid}{Unique fish ID \code{numeric}}
 #'   \item{date}{Release date \code{date}}
+#'   \item{time}{Release time \code{time}}
 #' }
 #' @references \url{http://http://iccat.int/Documents/CVSP/CV070_2014/n_4/CV070041365.pdf/}
 #' @name releases

@@ -74,7 +74,30 @@ rel_rec <- timeVectors(rel_rec=rel_rec)
 
 rel_rec <- spatialVectors(rel_rec=rel_rec)
 
+
+# Simplify rel_rec
+
+rel_rec <- rel_rec[,c("speciescode","rcstagecode","electronictagcode1","ctcode1","ctcode2","date","time","latitude","longitude","gearcode","depth","len","taggerid",
+                      "persontypecode","chktagcanceled","specimenid","taggrpid","rcstageid","surveycode","zone","areazone","rec_longitude","rec_latitude","rec_len",
+                      "rec_gearcode","rec_date","rec_time","timestamp","rec_timestamp","kg","rec_kg","month","rec_month","jday","rec_jday","days_at_liberty","eez",
+                      "lme","ocean","rec_eez","rec_lme","rec_ocean")]
+
 # Quality assessment
+
+rel_rec <- tagDataValidation(rel_rec=rel_rec)
+
+
+# Plotting 
+
+
+
+
+
+
+
+
+
+
 
 
 
