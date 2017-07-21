@@ -91,10 +91,6 @@ releases$depth <- ifelse(releases$depth==0,NA,releases$depth)
 save (releases,file='/home/dbeare/FLTag/data/releases.RData',compress="gzip")
 save (recoveries,file='/home/dbeare/FLTag/data/recoveries.RData',compress="gzip")
 
-
-
-
-
 ## Shapefiles ##
 
 library(rgdal)
