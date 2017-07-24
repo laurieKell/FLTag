@@ -49,7 +49,7 @@ rel_rec1 <- rel_rec[-c(xx.yy),]
   rel_rec <- rbind(rel_rec1,rel_rec_na)
   
   #########################################
-  # add on vectors for release locations###
+  # add on vectors for recovery locations###
   #########################################
   
   # find missing recovery locations
@@ -69,10 +69,10 @@ rel_rec1 <- rel_rec[-c(xx.yy),]
   # Add on EEZ
   
   rel_rec1$rec_eez <- as.character(over(rel_rec_xy, eez)$EEZ)
-  rel_rec1$rec_eez[is.na(rel_rec1$eez)] <- 'High Seas'
-  rel_rec1$rec_eez[rel_rec1$eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$rec_eez[rel_rec1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$rec_eez <- gsub('Exclusive Economic Zone','EEZ',rel_rec1$eez)
+  rel_rec1$rec_eez[is.na(rel_rec1$rec_eez)] <- 'High Seas'
+  rel_rec1$rec_eez[rel_rec1$rec_eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
+  rel_rec1$rec_eez[rel_rec1$rec_eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
+  rel_rec1$rec_eez <- gsub('Exclusive Economic Zone','EEZ',rel_rec1$rec_eez)
   
   # Add on LME
   rel_rec1$rec_lme <- as.character(over(rel_rec_xy, lme)$LME_NAME)

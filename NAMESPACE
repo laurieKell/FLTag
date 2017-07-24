@@ -8,7 +8,8 @@ export("summary",
 	"matchTagsA",
 	"spatialVectors",
 	"timeVectors",
-	"tagDataValidation")
+	"tagDataValidation",
+	"distance")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",

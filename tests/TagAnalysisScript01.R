@@ -87,6 +87,16 @@ rel_rec <- rel_rec[,c("speciescode","rcstagecode","electronictagcode1","ctcode1"
 rel_rec <- tagDataValidation(rel_rec=rel_rec)
 
 
+# Calculated distance between release and recovery
+
+rel_rec$kms <- distance(rec_longitude=rel_rec$rec_longitude, rec_latitude=rel_rec$rec_latitude, rel_longitude=rel_rec$longitude, rel_latitude = rel_rec$latitude)
+rel_rec$nautical_m <- rel_rec$kms * 0.5399 # nautical miles
+rel_rec$month_fraction <- rel_rec$days_at_liberty/30.43 # month fraction
+rel_rec$migration_per_month <- rel_rec$nautical_m/rel_rec$month_fraction #migration distance per month
+
+x<-rel_rec[!is.na(rel_rec$kms) & rel_rec$kms > 7000,]
+
+
 # Plotting 
 
 
