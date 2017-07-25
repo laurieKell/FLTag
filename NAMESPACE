@@ -9,7 +9,9 @@ export("summary",
 	"spatialVectors",
 	"timeVectors",
 	"tagDataValidation",
-	"distance")
+	"distance",
+	"fplot",
+	"mapPoints")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",
