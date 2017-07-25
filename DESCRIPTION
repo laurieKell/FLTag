@@ -23,6 +23,14 @@ Collate:
 	releases.R
 	recoveries.R
 	tagDataValidation.R
+	distance.R
+	fplot.R
+	mapPoints.R
+	relRecTimeSeries.R
+	relRecSummaryTab.R
+	mapTrack.R
+	mapScatterpie.R
+	mapHexbin.R
 VignetteBuilder: 
     knitr
 Suggests:

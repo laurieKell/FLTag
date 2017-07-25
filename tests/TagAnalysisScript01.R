@@ -2,6 +2,7 @@
 #Example script of analysis using FLTag##
 
 library(spatial)
+library(scatterpie)
 library(rio)
 library(data.table)
 library(sp)
@@ -9,7 +10,7 @@ library(doBy)
 library(rgdal)
 library(RColorBrewer)
 library(ggplot2)
-library(vmstools)
+#library(vmstools)
 library(mgcv)
 library(maps)
 library(mapdata)
@@ -87,21 +88,21 @@ rel_rec <- timeVectors(rel_rec=rel_rec)
 rel_rec <- spatialVectors(rel_rec=rel_rec)
 
 
-# Simplify rel_rec
-
-rel_rec <- rel_rec[,c("speciescode","rcstagecode","electronictagcode1","ctcode1","ctcode2","ctcolor1","ctcolor2","date","yrmon","time","latitude","longitude","gearcode","vesselid","schooltype","depth","len","taggerid",
-                      "persontypecode","chktagcanceled","specimenid","taggrpid","rcstageid","surveycode","zone","areazone","recovered","rec_longitude","rec_latitude","rec_len",
-                      "rec_gearcode","rec_date","rec_time","rec_yrmon","timestamp","rec_timestamp","kg","rec_kg","month","rec_month","jday","rec_jday","days_at_liberty","eez",
-                      "lme","ocean","rec_eez","rec_lme","rec_ocean")]
-
+# # Simplify rel_rec
+# 
+# rel_rec <- rel_rec[,c("speciescode","rcstagecode","electronictagcode1","ctcode1","ctcode2","ctcolor1","ctcolor2","date","yrmon","time","latitude","longitude","gearcode","vesselid","schooltype","depth","len","taggerid",
+#                       "persontypecode","chktagcanceled","specimenid","taggrpid","rcstageid","surveycode","zone","areazone","recovered","rec_longitude","rec_latitude","rec_len",
+#                       "rec_gearcode","rec_date","rec_time","rec_yrmon","timestamp","rec_timestamp","kg","rec_kg","month","rec_month","jday","rec_jday","days_at_liberty","eez",
+#                       "lme","ocean","rec_eez","rec_lme","rec_ocean")]
+# 
 # Quality assessment
 
 rel_rec <- tagDataValidation(rel_rec=rel_rec)
 
-
 # Calculated distance between release and recovery
 
 rel_rec$kms <- distance(rec_longitude=rel_rec$rec_longitude, rec_latitude=rel_rec$rec_latitude, rel_longitude=rel_rec$longitude, rel_latitude = rel_rec$latitude)
+
 rel_rec$nautical_m <- rel_rec$kms * 0.5399 # nautical miles
 rel_rec$month_fraction <- rel_rec$days_at_liberty/30.43 # month fraction
 rel_rec$migration_per_month <- rel_rec$nautical_m/rel_rec$month_fraction #migration distance per month
@@ -152,6 +153,18 @@ mapScatterpie(input=rel_rec[year(rel_rec$date)==2017,],what.species=c('BET','SKJ
 pander(relRecSummaryTab()$Releases)
 pander(relRecSummaryTab()$Recoveries)
 
+#double-tagging, tag-shedding
+
+tagSheddingTab()$Double_Tag_Nos
+tagSheddingTab()$Tag_Shed_Nos
+tagSheddingTab()$Tag_Shed_Perc
+Tag_Shed_Nos=Tag_Shed_Nos,Tag_Shed_Perc=Tag_Shed_Perc
+
+
+#chemically-tagged totals
+
+ChemTaggingTab()
+
 #releases and recoveries in time
 
 relRecTimeSeries()
@@ -162,19 +175,6 @@ relRecTimeSeries(what.species='SKJ')
 
 
 
-
-
-
-
-
-p1 <- ggplot(data=ts1[ts1$speciescode %in% c('BET','LTA','SKJ','YFT'),], aes(x=date,y=releases))
-p1 + geom_point(aes(x=date,y=releases),color='green')
-
-
-+
-  geom_point(aes(x=date,y=sqrt(recoveries)),color='red') +
-  xlab("Date")+ylab("sqrt(Frequency)")+
-  facet_wrap(~species,ncol=2)
 
 
 

@@ -11,6 +11,12 @@ export("summary",
 	"tagDataValidation",
 	"distance",
 	"fplot",
+	"mapPoints",
+	"relRecTimeSeries",
+	"relRecSummaryTab",
+	"mapTrack",
+	"mapHexbin"
+	"mapScatterpie",
 	"mapPoints")
 exportClasses("FLTag")
 exportMethods("FLTag",
