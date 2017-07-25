@@ -13,7 +13,7 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.longitude='longit
     coord_fixed(1,xlim=c(-70,25),ylim=c(-40,50))  +
    geom_segment(data=input[input$speciescode %in% what.species,],
                  aes(x=longitude,y=latitude,xend=rec_longitude,yend=rec_latitude,group=specimenid,color=speciescode),
-              arrow = arrow(length = unit(0.2,"cm")),size=.05,alpha=.25) +
+              arrow = arrow(length = unit(0.2,"cm")),size=.3,alpha=.25) +
   facet_wrap(~ speciescode, ncol=2) +
     theme(plot.margin=unit(c(1,1,1,1),"cm"),
           axis.text.x =element_text(colour="grey20",size=12,face="plain"),
