@@ -20,7 +20,8 @@ export("summary",
 	"mapPoints",
 	"TagSheddingTab",
 	"ChemTaggingTab",
-	"TagSeedingTab")
+	"TagSeedingTab",
+	"cleanTagData")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",
