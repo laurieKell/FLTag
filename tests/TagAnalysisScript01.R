@@ -34,25 +34,20 @@ library(FLTag)
 odbcCloseAll()
 aottp <-  odbcConnect("aottp-local", case ="postgresql", believeNRows=FALSE)
 
-# get AOTTP data
+# get AOTTP data needed 
 releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled ='false';")
 recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
-
-# check data
-
-head(releases);dim(releases)
-head(recoveries);dim(recoveries)
-
-# #read in file of Nabou's
-# 
-# dat <- read.table('/home/dbeare/Dropbox/AOTTP/Data/lista_of_codes.csv',sep=',',header=T)
-# #recoveries[recoveries$ctcode1 %in% dat$ctcode,]
-# abidjan<- read.table('/home/dbeare/Dropbox/AOTTP/Data/R03_20160819_for_send.csv',sep=',',header=T)
-# names(abidjan)[1]<-'ctcode1'
-# #x0 <- abidjan[abidjan$ctcode1 %in% dat$ctcode,]
-# xx <- releases[releases$ctcode1 %in% dat$ctcode,]
-# dat$no_match1 <- match(dat$ctcode,releases$ctcode1)
-# dat$no_match2 <- match(dat$ctcode,releases$ctcode2)
+persons <- sqlQuery(aottp, "SELECT * from persons WHERE persontagger = TRUE;")
+persons$personname <- as.character(persons$personname)
+persons$personcountryid[persons$personname == 'GAIZKA BIDEGAIN'] <- 21
+persons$personcountryid[persons$personname == 'IÑIGO ONANDIA CALVO'] <- 21
+persons$personcountryid[persons$personname == 'YAO Kouakou Appolinaire'] <- 50
+persons$personcountryid[persons$personname == 'MARINA CHIFFLET'] <- 21
+persons$personcountryid[persons$personid == 976] <- 50
+persons$personcountryid[persons$personname == 'Edward NELSON-COFIE'] <- 50
+countries <- sqlQuery(aottp, "SELECT * from countries;")
+tagseries <- sqlQuery(aottp, "SELECT * from tagseries;")
+electronictags <- sqlQuery(aottp,"SELECT * from electronictags;")
 
 
 # put on recoveries matching on specimenid using matchTagsA
@@ -133,6 +128,12 @@ fplot(input=rel_rec,what.to.plot='rec_len',what.species=c('BET','SKJ','LTA','YFT
 #points
 mapPoints(input = rel_rec,what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","LTA","YFT","BET"))
 mapPoints(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"))
+mapPoints(input = rel_rec[!is.na(rel_rec$electronictagcode1),],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
+mapPoints(input = rel_rec[!is.na(rel_rec$electronictagcode1),],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","YFT","BET"))
+mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","YFT","BET"))
+mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
+mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
+
 
 #hexbins
 mapHexbin(what.species='YFT',nbins=200)
@@ -182,13 +183,15 @@ relRecTimeSeries(what.species='SKJ')
 
 #tag-seeding
 
-TagSeedingTab()
+pander(TagSeedingTab(input=rel_rec)$tagSeedRel)
+pander(TagSeedingTab(input=rel_rec)$tagSeedRec)
+pander(TagSeedingTab(input=rel_rec)$tagSeedPerc)
 
+#n tags by country
 
+pander(nTagsRelByCountry())
 
-
-
-
+#e tags
 
 
 

@@ -35,6 +35,8 @@ Collate:
 	TagSheddingTab.R
 	TagSeedingTab.R
 	cleanTagData.R
+	nTagsRelByCountry.R
+	nElectronicTagsTab.R
 VignetteBuilder: 
     knitr
 Suggests:

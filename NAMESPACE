@@ -21,7 +21,9 @@ export("summary",
 	"TagSheddingTab",
 	"ChemTaggingTab",
 	"TagSeedingTab",
-	"cleanTagData")
+	"cleanTagData",
+	"nTagsRelByCountry",
+	"nElectronicTagsTab")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",
