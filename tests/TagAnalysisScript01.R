@@ -11,6 +11,7 @@ library(rgdal)
 library(RColorBrewer)
 library(ggplot2)
 #library(vmstools)
+library(lubridate)
 library(mgcv)
 library(maps)
 library(mapdata)
@@ -58,9 +59,14 @@ head(recoveries);dim(recoveries)
 
 rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid')
 
+# harmonise character strings
+
+rel_rec <- cleanTagData(input = rel_rec)
+
+
 # Change factors to characters and generate R-format timestamps
 
-rel_rec <- formatTagdata(rel_rec=rel_rec)
+rel_rec <- formatTagdata(input=rel_rec)
 
 # Convert weights to lengths
 
@@ -69,14 +75,14 @@ rel_rec$kg <- NA
 rel_rec$kg[rel_rec$speciescode == 'BET'] <- lenW_BET(lf=rel_rec$len[rel_rec$speciescode == 'BET'])
 rel_rec$kg[rel_rec$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec$len[rel_rec$speciescode == 'SKJ'])
 rel_rec$kg[rel_rec$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec$len[rel_rec$speciescode == 'YFT'])
-rel_rec$kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$len[rel_rec$speciescode == 'LTA'])
+rel_rec$kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$len[rel_rec$speciescode == 'LTA'])/1000
 
 rel_rec$rec_kg <- NA
 
 rel_rec$rec_kg[rel_rec$speciescode == 'BET'] <- lenW_BET(lf=rel_rec$rec_len[rel_rec$speciescode == 'BET'])
 rel_rec$rec_kg[rel_rec$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec$rec_len[rel_rec$speciescode == 'SKJ'])
 rel_rec$rec_kg[rel_rec$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec$rec_len[rel_rec$speciescode == 'YFT'])
-rel_rec$rec_kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$rec_len[rel_rec$speciescode == 'LTA'])
+rel_rec$rec_kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$rec_len[rel_rec$speciescode == 'LTA'])/1000
 
 
 # Add on useful time vectors, e.g. julian day, month, year
@@ -117,6 +123,10 @@ fplot(input=rel_rec,what.to.plot='kms',what.species='YFT',max.obs=5000)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species='YFT',max.obs=350)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=350)
 fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
+fplot(input=rel_rec,what.to.plot='kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
+fplot(input=rel_rec,what.to.plot='rec_kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
+fplot(input=rel_rec,what.to.plot='len',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
+fplot(input=rel_rec,what.to.plot='rec_len',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
 
 
 #maps
@@ -155,11 +165,10 @@ pander(relRecSummaryTab()$Recoveries)
 
 #double-tagging, tag-shedding
 
-tagSheddingTab()$Double_Tag_Nos
-tagSheddingTab()$Tag_Shed_Nos
-tagSheddingTab()$Tag_Shed_Perc
-Tag_Shed_Nos=Tag_Shed_Nos,Tag_Shed_Perc=Tag_Shed_Perc
-
+TagSheddingTab()$Double_Tag_Nos
+TagSheddingTab()$Tag_Shed_Nos
+TagSheddingTab()$Tag_Shed_Perc
+TagSheddingTab()
 
 #chemically-tagged totals
 
@@ -171,8 +180,9 @@ relRecTimeSeries()
 relRecTimeSeries(what.species=c('BET',"YFT"))
 relRecTimeSeries(what.species='SKJ')
 
+#tag-seeding
 
-
+TagSeedingTab()
 
 
 

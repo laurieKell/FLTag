@@ -1,9 +1,9 @@
-formatTagdata <- function(rel_rec=rel_rec){
+formatTagdata <- function(input=rel_rec){
   
-  i <- sapply(rel_rec, is.factor)
-  rel_rec[i] <- lapply(rel_rec[i], as.character)
-  rel_rec$timestamp <- strptime(paste(rel_rec$date,rel_rec$time), format = "%Y-%m-%d %H:%M:%S") 
-  rel_rec$rec_timestamp <- strptime(paste(rel_rec$rec_date,rel_rec$time), format = "%Y-%m-%d %H:%M:%S") 
-  rel_rec
+  i <- sapply(input, is.factor)
+  input[i] <- lapply(input[i], as.character)
+  input$timestamp <- strptime(paste(input$date,input$time), format = "%Y-%m-%d %H:%M:%S") 
+  input$rec_timestamp <- strptime(paste(input$rec_date,input$time), format = "%Y-%m-%d %H:%M:%S") 
+  input
 }
   

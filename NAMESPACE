@@ -15,9 +15,12 @@ export("summary",
 	"relRecTimeSeries",
 	"relRecSummaryTab",
 	"mapTrack",
-	"mapHexbin"
+	"mapHexbin",
 	"mapScatterpie",
-	"mapPoints")
+	"mapPoints",
+	"TagSheddingTab",
+	"ChemTaggingTab",
+	"TagSeedingTab")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",

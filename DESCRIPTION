@@ -31,6 +31,10 @@ Collate:
 	mapTrack.R
 	mapScatterpie.R
 	mapHexbin.R
+	ChemTaggingTab.R
+	TagSheddingTab.R
+	TagSeedingTab.R
+	cleanTagData.R
 VignetteBuilder: 
     knitr
 Suggests:
