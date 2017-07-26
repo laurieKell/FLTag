@@ -1,17 +1,17 @@
-timeVectors <- function(rel_rec=rel_rec)
+timeVectors <- function(input=rel_rec)
 {
-  # rel_rec <- rel_rec
+  input <- rel_rec
  #Month
- rel_rec$month<- months(as.POSIXlt(rel_rec$timestamp, format="%Y-%b-%d"))
- rel_rec$rec_month<- months(as.POSIXlt(rel_rec$rec_timestamp, format="%Y-%b-%d"))
- rel_rec$yrmon<-as.yearmon(rel_rec$date)
- rel_rec$rec_yrmon <- as.yearmon(rel_rec$rec_date)
+ input$month<- months(as.POSIXlt(input$timestamp, format="%Y-%b-%d"))
+ input$rec_month<- months(as.POSIXlt(input$rec_timestamp, format="%Y-%b-%d"))
+ input$yrmon<-as.yearmon(input$date)
+ input$rec_yrmon <- as.yearmon(input$rec_date)
  
   #Julian day
- rel_rec$jday     <- julian(as.POSIXlt(rel_rec$timestamp, format="%Y-%b-%d"),origin="2016-01-01")
- rel_rec$rec_jday <- julian(as.POSIXlt(rel_rec$rec_timestamp, format="%Y-%b-%d"),origin="2016-01-01")
+ input$jday     <- julian(as.POSIXlt(input$timestamp, format="%Y-%b-%d"),origin="2016-01-01")
+ input$rec_jday <- julian(as.POSIXlt(input$rec_timestamp, format="%Y-%b-%d"),origin="2016-01-01")
  #Time at liberty
- rel_rec$days_at_liberty <- as.numeric(difftime(rel_rec$rec_timestamp,rel_rec$timestamp,units='days'))
- rel_rec
+ input$days_at_liberty <- as.numeric(difftime(input$rec_timestamp,input$timestamp,units='days'))
+ input
  }
   

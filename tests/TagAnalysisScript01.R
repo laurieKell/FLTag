@@ -48,7 +48,7 @@ persons$personcountryid[persons$personname == 'Edward NELSON-COFIE'] <- 50
 countries <- sqlQuery(aottp, "SELECT * from countries;")
 tagseries <- sqlQuery(aottp, "SELECT * from tagseries;")
 electronictags <- sqlQuery(aottp,"SELECT * from electronictags;")
-
+fadmoratorium <- readOGR("/home/dbeare/fadmoratorium",layer="fadmoratorium",verbose=FALSE)
 
 # put on recoveries matching on specimenid using matchTagsA
 
@@ -57,7 +57,6 @@ rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid')
 # harmonise character strings
 
 rel_rec <- cleanTagData(input = rel_rec)
-
 
 # Change factors to characters and generate R-format timestamps
 
@@ -82,11 +81,11 @@ rel_rec$rec_kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$rec_len[rel_
 
 # Add on useful time vectors, e.g. julian day, month, year
 
-rel_rec <- timeVectors(rel_rec=rel_rec)
+rel_rec <- timeVectors(input=rel_rec)
 
 # Add on useful spatial information
 
-rel_rec <- spatialVectors(rel_rec=rel_rec)
+rel_rec <- spatialVectors(input=rel_rec)
 
 
 # # Simplify rel_rec
@@ -98,7 +97,7 @@ rel_rec <- spatialVectors(rel_rec=rel_rec)
 # 
 # Quality assessment
 
-rel_rec <- tagDataValidation(rel_rec=rel_rec)
+rel_rec <- tagDataValidation(input=rel_rec)
 
 # Calculated distance between release and recovery
 
@@ -136,13 +135,12 @@ mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "lo
 
 
 #hexbins
-mapHexbin(what.species='YFT',nbins=200)
+mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=100)
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"),nbins=200)
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("BET"),nbins=300)
 
 
 #tracks
-
 mapTrack(what.species='YFT')
 mapTrack(what.species='BET')
 mapTrack(what.species='SKJ')
@@ -151,7 +149,6 @@ mapTrack(what.species=c('SKJ','YFT'))
 
 
 #scatterpids
-
 mapScatterpie()
 mapScatterpie(input=rel_rec,what.species=c('BET','YFT'),sf=3)
 mapScatterpie(input=rel_rec,what.species=c('BET','SKJ','YFT'),sf=3)
@@ -194,6 +191,6 @@ pander(nTagsRelByCountry())
 #e tags
 
 
-
+nElectronicTagsTab()
 
 

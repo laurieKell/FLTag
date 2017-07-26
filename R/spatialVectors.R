@@ -1,4 +1,4 @@
-spatialVectors <- function(rel_rec=rel_rec)
+spatialVectors <- function(input=rel_rec)
 {
   
 data("eez") # add on names of EEZs
@@ -17,36 +17,36 @@ proj4string(seas) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
 # find missing release locations
 
-  xx <- (1:length(rel_rec[,1]))[is.na(rel_rec$longitude)]
-  yy <- (1:length(rel_rec[,1]))[is.na(rel_rec$latitude)]
+  xx <- (1:length(input[,1]))[is.na(input$longitude)]
+  yy <- (1:length(input[,1]))[is.na(input$latitude)]
   xx.yy<-unique(c(xx,yy))
-rel_rec_na <- rel_rec[xx.yy,]
-rel_rec1 <- rel_rec[-c(xx.yy),]
+input_na <- input[xx.yy,]
+input1 <- input[-c(xx.yy),]
 
-  rel_rec_xy <- data.frame(longitude=rel_rec1$longitude,latitude=rel_rec1$latitude)
-  coordinates(rel_rec_xy) <- c("longitude", "latitude")
-  proj4string(rel_rec_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  input_xy <- data.frame(longitude=input1$longitude,latitude=input1$latitude)
+  coordinates(input_xy) <- c("longitude", "latitude")
+  proj4string(input_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
   
-  rel_rec_xy <- SpatialPointsDataFrame(rel_rec_xy,data=data.frame(speciescode=rel_rec1$speciescode))
+  input_xy <- SpatialPointsDataFrame(input_xy,data=data.frame(speciescode=input1$speciescode))
   
   # Add on EEZ
   
-  rel_rec1$eez <- as.character(over(rel_rec_xy, eez)$EEZ)
-  rel_rec1$eez[is.na(rel_rec1$eez)] <- 'High Seas'
-  rel_rec1$eez[rel_rec1$eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$eez[rel_rec1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$eez <- gsub('Exclusive Economic Zone','EEZ',rel_rec1$eez)
+  input1$eez <- as.character(over(input_xy, eez)$EEZ)
+  input1$eez[is.na(input1$eez)] <- 'High Seas'
+  input1$eez[input1$eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
+  input1$eez[input1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
+  input1$eez <- gsub('Exclusive Economic Zone','EEZ',input1$eez)
   
   # Add on LME
-  rel_rec1$lme <- as.character(over(rel_rec_xy, lme)$LME_NAME)
+  input1$lme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
-  rel_rec1$ocean <- as.character(over(rel_rec_xy, seas)$NAME)
+  input1$ocean <- as.character(over(input_xy, seas)$NAME)
   
-  rel_rec_na$eez <- NA
-  rel_rec_na$lme <- NA
-  rel_rec_na$ocean <- NA
+  input_na$eez <- NA
+  input_na$lme <- NA
+  input_na$ocean <- NA
   
-  rel_rec <- rbind(rel_rec1,rel_rec_na)
+  input <- rbind(input1,input_na)
   
   #########################################
   # add on vectors for recovery locations###
@@ -54,39 +54,39 @@ rel_rec1 <- rel_rec[-c(xx.yy),]
   
   # find missing recovery locations
   
-  xx <- (1:length(rel_rec[,1]))[is.na(rel_rec$rec_longitude)]
-  yy <- (1:length(rel_rec[,1]))[is.na(rel_rec$rec_latitude)]
+  xx <- (1:length(input[,1]))[is.na(input$rec_longitude)]
+  yy <- (1:length(input[,1]))[is.na(input$rec_latitude)]
   xx.yy<-unique(c(xx,yy))
-  rel_rec_na <- rel_rec[xx.yy,]
-  rel_rec1 <- rel_rec[-c(xx.yy),]
+  input_na <- input[xx.yy,]
+  input1 <- input[-c(xx.yy),]
   
-  rel_rec_xy <- data.frame(longitude=rel_rec1$rec_longitude,latitude=rel_rec1$rec_latitude)
-  coordinates(rel_rec_xy) <- c("longitude", "latitude")
-  proj4string(rel_rec_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  input_xy <- data.frame(longitude=input1$rec_longitude,latitude=input1$rec_latitude)
+  coordinates(input_xy) <- c("longitude", "latitude")
+  proj4string(input_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
   
-  rel_rec_xy <- SpatialPointsDataFrame(rel_rec_xy,data=data.frame(speciescode=rel_rec1$speciescode))
+  input_xy <- SpatialPointsDataFrame(input_xy,data=data.frame(speciescode=input1$speciescode))
   
   # Add on EEZ
   
-  rel_rec1$rec_eez <- as.character(over(rel_rec_xy, eez)$EEZ)
-  rel_rec1$rec_eez[is.na(rel_rec1$rec_eez)] <- 'High Seas'
-  rel_rec1$rec_eez[rel_rec1$rec_eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$rec_eez[rel_rec1$rec_eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
-  rel_rec1$rec_eez <- gsub('Exclusive Economic Zone','EEZ',rel_rec1$rec_eez)
+  input1$rec_eez <- as.character(over(input_xy, eez)$EEZ)
+  input1$rec_eez[is.na(input1$rec_eez)] <- 'High Seas'
+  input1$rec_eez[input1$rec_eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
+  input1$rec_eez[input1$rec_eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
+  input1$rec_eez <- gsub('Exclusive Economic Zone','EEZ',input1$rec_eez)
   
   # Add on LME
-  rel_rec1$rec_lme <- as.character(over(rel_rec_xy, lme)$LME_NAME)
+  input1$rec_lme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
-  rel_rec1$rec_ocean <- as.character(over(rel_rec_xy, seas)$NAME)
+  input1$rec_ocean <- as.character(over(input_xy, seas)$NAME)
   
-  rel_rec_na$rec_eez <- NA
-  rel_rec_na$rec_lme <- NA
-  rel_rec_na$rec_ocean <- NA
+  input_na$rec_eez <- NA
+  input_na$rec_lme <- NA
+  input_na$rec_ocean <- NA
   
-  rel_rec <- rbind(rel_rec1,rel_rec_na)
+  input <- rbind(input1,input_na)
   
   
-  rel_rec
+  input
   
   
   

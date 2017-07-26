@@ -17,6 +17,6 @@ nTagsRelByCountry <- function(input=rel_rec){
   fbyc$Var1 <- as.character(fbyc$Var1)
   fbyc$Var1[dim(fbyc)[1]] <- "Total"
   colnames(fbyc)<-c("Country","Frequency")
-  pander(fbyc)
+  fbyc
   
 }

@@ -11,9 +11,6 @@ ts2$date<-as.POSIXct(as.character(ts2$rec_date))
 ts1$svalue <- sqrt(ts1$value)
 ts2$svalue <- sqrt(ts2$value)
 
-plot(ts1$date,ts1$sreleases)
-plot(ts2$rec_date,ts2$srecoveries)
-
 plot.title  <-  'Total releases (green) and recoveries (red) by species over time'
 plot.subtitle <- '(AOTTP)'
 ggplot(data=ts1[ts1$speciescode %in% what.species,], aes(x=date, y=svalue)) +
