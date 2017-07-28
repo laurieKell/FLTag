@@ -1,7 +1,7 @@
 mapPoints <- function (input = rel_rec,what.species = 'SKJ',what.longitude='longitude',what.latitude='latitude')
   
 {
- # input = rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c("YFT","BET")
+  #input = rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c("YFT","BET")
   
   Atl <- c(-30,0)
   input <- fortify(input)
