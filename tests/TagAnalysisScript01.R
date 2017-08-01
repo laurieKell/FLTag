@@ -56,7 +56,7 @@ rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid')
 
 # harmonise character strings
 
-rel_rec <- cleanTagData(input = rel_rec)
+rel_rec <- cleanTagData(input = rel_rec[rel_rec$tagseeding==0,])
 
 # Change factors to characters and generate R-format timestamps
 
@@ -98,6 +98,7 @@ rel_rec <- spatialVectors(input=rel_rec)
 # Quality assessment
 
 rel_rec <- tagDataValidation(input=rel_rec)
+table(rel_rec$score)
 
 # Calculated distance between release and recovery
 
@@ -113,7 +114,7 @@ x
 
 # Plotting 
 # frequencies
-fplot(input=rel_rec,what.to.plot='kms',what.species='YFT',max.obs=5000)
+fplot(input=rel_rec[rel_rec$score==10,],what.to.plot='kms',what.species='YFT',max.obs=5000)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species='YFT',max.obs=350)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=350)
 fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
@@ -133,6 +134,7 @@ mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_
 mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
 mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
 
+mapPointsSpeciesByMonth(what.species = 'SKJ')
 
 #hexbins
 mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=100)
@@ -190,7 +192,12 @@ pander(nTagsRelByCountry())
 
 #e tags
 
-
 nElectronicTagsTab()
+
+#growth tracks
+
+growthTrack(input[input$score > 4,],what.species ='YFT')
+growthTrack(input[input$score > 4,],what.species =c('BET','LTA','SKJ','YFT'))
+
 
 

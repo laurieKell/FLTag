@@ -14,9 +14,9 @@ mapPoints <- function (input = rel_rec,what.species = 'SKJ',what.longitude='long
     #geom_polygon(data=eez,aes(x=long,y=lat,group=group),color='lightblue',fill=NA,size=0.1) +
     facet_wrap(~ speciescode, ncol=2)+
     theme(plot.margin=unit(c(1,1,1,1),"cm"),
-          axis.text.x =element_text(colour="grey20",size=12,face="plain"),
-          axis.text.y=element_text(colour="grey20",size=12,face="plain"),
-          axis.title.y=element_text(size=15))+
+          axis.text.x =element_text(colour="grey20",size=10,face="plain"),
+          axis.text.y=element_text(colour="grey20",size=10,face="plain"),
+          axis.title.y=element_text(size=12))+
     xlab("")+ylab("")
   
 }

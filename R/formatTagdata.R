@@ -1,10 +1,15 @@
 formatTagdata <- function(input=rel_rec){
   #Add useful vectors to the data
+  
   #Timestamps
   i <- sapply(input, is.factor)
   input[i] <- lapply(input[i], as.character)
   input$timestamp <- strptime(paste(input$date,input$time), format = "%Y-%m-%d %H:%M:%S") 
   input$rec_timestamp <- strptime(paste(input$rec_date,input$time), format = "%Y-%m-%d %H:%M:%S") 
+  
+  #Change zeros to NAs
+  input$len <- ifelse(input$len==0,NA, input$len)
+  input$rec_len <- ifelse(input$rec_len==0,NA, input$rec_len)
   
   #Electronic tag information
   wcs <- tagseries$tagnumidfrom[tagseries$tagtype == 'MiniPAT-348C']:tagseries$tagnumidto[tagseries$tagtype == 'MiniPAT-348C']

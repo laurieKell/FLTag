@@ -23,7 +23,9 @@ export("summary",
 	"TagSeedingTab",
 	"cleanTagData",
 	"nTagsRelByCountry",
-	"nElectronicTagsTab")
+	"nElectronicTagsTab",
+	"mapPointsSpeciesByMonth",
+	"growthTrack")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",

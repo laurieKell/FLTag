@@ -37,6 +37,8 @@ Collate:
 	cleanTagData.R
 	nTagsRelByCountry.R
 	nElectronicTagsTab.R
+	mapPointsSpeciesByMonth.R
+	growthTrack.R
 VignetteBuilder: 
     knitr
 Suggests:

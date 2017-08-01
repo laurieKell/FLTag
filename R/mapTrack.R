@@ -1,4 +1,4 @@
-mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.longitude='longitude',what.latitude='latitude',nbins=100)
+mapTrack <- function(input = rel_rec,what.species = 'SKJ')
 {
   #input = rel_rec; what.species = c("SKJ")
   #world <- map_data('world');
