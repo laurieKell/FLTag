@@ -27,6 +27,9 @@ mapScatterpie <- function (input = rel_rec,what.species = c('BET','LTA','SKJ','Y
   world <- map_data('world')
   ggplot(world, aes(long, lat, group=group)) +
   geom_map(map=world, aes(map_id=region), fill=NA, color="black") +
+    geom_hline(yintercept=10, color='green',size=.2)+
+    geom_vline(xintercept=-30, color='green',size=.2)+
+    
   #coord_quickmap()+
   coord_fixed(1.3,xlim=c(-70,25),ylim=c(-40,40))+
   geom_polygon(data=world,aes(x=long,y=lat,group=group),col='darkgreen',fill='darkgreen')+

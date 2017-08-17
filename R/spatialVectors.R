@@ -45,8 +45,15 @@ input1 <- input[-c(xx.yy),]
   input_na$eez <- NA
   input_na$lme <- NA
   input_na$ocean <- NA
-  
   input <- rbind(input1,input_na)
+  
+  input$quad <- rep(NA,length(input[,1]))
+  input$quad[input$longitude >= -30 & input$latitude >= 10] <- 'NE'
+  input$quad[input$longitude >= -30 & input$latitude <= 10] <- 'SE'
+  
+  input$quad[input$longitude < -30 & input$latitude > 10] <- 'NW'
+  input$quad[input$longitude < -30 & input$latitude < 10] <- 'SW'
+  
   
   #########################################
   # add on vectors for recovery locations###
@@ -85,10 +92,13 @@ input1 <- input[-c(xx.yy),]
   
   input <- rbind(input1,input_na)
   
+  input$rec_quad <- rep(NA,length(input[,1]))
+  input$rec_quad[input$rec_longitude >= -30 & input$rec_latitude >= 10] <- 'NE'
+  input$rec_quad[input$rec_longitude >= -30 & input$rec_latitude <= 10] <- 'SE'
+  
+  input$rec_quad[input$rec_longitude < -30 & input$rec_latitude > 10] <- 'NW'
+  input$rec_quad[input$rec_longitude < -30 & input$rec_latitude < 10] <- 'SW'
   
   input
-  
-  
-  
   
 }
