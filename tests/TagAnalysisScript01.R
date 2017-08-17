@@ -35,8 +35,8 @@ odbcCloseAll()
 aottp <-  odbcConnect("aottp-local", case ="postgresql", believeNRows=FALSE)
 
 # get AOTTP data needed 
-releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled ='false';")
-recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';")
+releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled ='false';");dim(releases)
+recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';");dim(recoveries)
 persons <- sqlQuery(aottp, "SELECT * from persons WHERE persontagger = TRUE;")
 persons$personname <- as.character(persons$personname)
 persons$personcountryid[persons$personname == 'GAIZKA BIDEGAIN'] <- 21

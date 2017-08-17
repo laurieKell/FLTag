@@ -16,11 +16,13 @@ formatTagdata <- function(input=rel_rec){
   dss <- tagseries$tagnumidfrom[tagseries$tagtype == 'SeaTag 3D PSAT']:tagseries$tagnumidto[tagseries$tagtype == 'SeaTag 3D PSAT']
   lok.2810 <- tagseries$tagnumidfrom[tagseries$tagtype == '2810']:tagseries$tagnumidto[tagseries$tagtype == '2810']
   lok.ageo <- tagseries$tagnumidfrom[tagseries$tagtype == 'ARCGEO-9']:tagseries$tagnumidto[tagseries$tagtype == 'ARCGEO-9']
+ 
   input$model[input$electronictagcode1 %in% lok.2810] <- 'Lotek-2810'
   input$model[input$electronictagcode1 %in% dss] <- 'DS-SeaTag-3D-PSAT'
   input$model[input$electronictagcode1 %in% wcs] <- 'MiniPAT-348C'
   input$model[input$electronictagcode1 %in% lok.ageo] <- 'ARCGEO-9'
   input$supplierserialnumber <- electronictags$supplierserialnumber[match(input$electronictagcode1,electronictags$electronictagcode)]
+  input$argos                <- wc_codes$argos[match(input$electronictagcode1,wc_codes$aottp_id)]
   input
 }
   

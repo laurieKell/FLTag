@@ -1,9 +1,12 @@
 timeVectors <- function(input=rel_rec)
 {
-  input <- rel_rec
+ #input <- rel_rec
  #Month
  input$month<- months(as.POSIXlt(input$timestamp, format="%Y-%b-%d"))
  input$rec_month<- months(as.POSIXlt(input$rec_timestamp, format="%Y-%b-%d"))
+ input$year <- year(as.POSIXlt(input$timestamp, format="%Y-%b-%d"))
+ input$rec_year <- year(as.POSIXlt(input$rec_timestamp, format="%Y-%b-%d"))
+ 
  input$yrmon<-as.yearmon(input$date)
  input$rec_yrmon <- as.yearmon(input$rec_date)
  
