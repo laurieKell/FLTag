@@ -1,6 +1,6 @@
 spatialVectors <- function(input=rel_rec)
 {
-  
+#input <- rel_rec
 data("eez") # add on names of EEZs
 data("seas")
 data("lme") # large marine ecosystems
@@ -42,6 +42,7 @@ input1 <- input[-c(xx.yy),]
   # Add on Ocean or Sea
   input1$ocean <- as.character(over(input_xy, seas)$NAME)
   
+    
   input_na$eez <- NA
   input_na$lme <- NA
   input_na$ocean <- NA
@@ -53,6 +54,13 @@ input1 <- input[-c(xx.yy),]
   
   input$quad[input$longitude < -30 & input$latitude > 10] <- 'NW'
   input$quad[input$longitude < -30 & input$latitude < 10] <- 'SW'
+  
+  #FadMoratorium-releases
+  
+  input$fmor17 <- rep(NA,length(input[,1]))
+  input$fmor17[input$longitude > -20 & input$latitude > -4 & input$latitude < 5 & input$year == 2017 & input$month %in% c('enero','febrero')] <- 'fmor17'
+  
+  
   
   
   #########################################
@@ -98,6 +106,13 @@ input1 <- input[-c(xx.yy),]
   
   input$rec_quad[input$rec_longitude < -30 & input$rec_latitude > 10] <- 'NW'
   input$rec_quad[input$rec_longitude < -30 & input$rec_latitude < 10] <- 'SW'
+  
+  
+  #FadMoratorium-releases
+  
+  input$rec_fmor17 <- rep(NA,length(input[,1]))
+  input$rec_fmor17[input$rec_longitude > -20 & input$rec_latitude > -4 & input$rec_latitude < 5 & input$rec_year == 2017 & input$rec_month %in% c('enero','febrero')] <- 'rec_fmor17'
+  
   
   input
   

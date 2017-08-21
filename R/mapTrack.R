@@ -7,7 +7,6 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ')
     
     Atl <- c(-30,0)
   input <- fortify(input)
-  input <- input[input$score>8,]
   wAfMap <- get_map(location=Atl,source='google',maptype='satellite',crop=TRUE,zoom=3)
   ggmap(wAfMap) +
     coord_fixed(1,xlim=c(-70,25),ylim=c(-40,50))  +

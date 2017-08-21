@@ -56,7 +56,7 @@ rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid')
 
 # harmonise character strings
 
-rel_rec <- cleanTagData(input = rel_rec[rel_rec$tagseeding==0,])
+rel_rec <- cleanTagData(input = rel_rec)
 
 # Change factors to characters and generate R-format timestamps
 
@@ -114,7 +114,7 @@ x
 
 # Plotting 
 # frequencies
-fplot(input=rel_rec[rel_rec$score==10,],what.to.plot='kms',what.species='YFT',max.obs=5000)
+fplot(input=rel_rec[rel_rec$score==6,],what.to.plot='kms',what.species='YFT',max.obs=5000)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species='YFT',max.obs=350)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=350)
 fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
@@ -143,10 +143,10 @@ mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_la
 
 
 #tracks
-mapTrack(what.species='YFT')
-mapTrack(what.species='BET')
-mapTrack(what.species='SKJ')
-mapTrack(what.species=c('BET','LTA'))
+mapTrack(input = rel_rec[rel_rec$score==6,], what.species='YFT')
+mapTrack(input = rel_rec[rel_rec$score==6,],what.species='BET')
+mapTrack(input = rel_rec[rel_rec$score==6,],what.species='SKJ')
+mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA'))
 mapTrack(what.species=c('SKJ','YFT'))
 
 
@@ -194,10 +194,18 @@ pander(nTagsRelByCountry())
 
 nElectronicTagsTab()
 
+
+# FAD moratorium
+jf2017 <- rel_rec[rel_rec$year ==2017 & rel_rec$month %in% c('enero','febrero'),]
+table(jf2017$fmor17)
+table(jf2017$fmor17,jf2017$speciescode)
+table(jf2017$rec_fmor17,jf2017$speciescode)
+
+
 #growth tracks
 
 growthTrack(input[input$score > 4,],what.species ='YFT')
-growthTrack(input[input$score > 4,],what.species =c('BET','LTA','SKJ','YFT'))
+growthTrack(input[input$score > 5,],what.species =c('BET','LTA','SKJ','YFT'))
 
 
 
