@@ -17,4 +17,4 @@ timeVectors <- function(input=rel_rec)
  input$days_at_liberty <- as.numeric(difftime(input$rec_timestamp,input$timestamp,units='days'))
  input
  }
-  
+

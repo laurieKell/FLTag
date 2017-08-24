@@ -52,15 +52,15 @@ fadmoratorium <- readOGR("/home/dbeare/fadmoratorium",layer="fadmoratorium",verb
 
 # put on recoveries matching on specimenid using matchTagsA
 
-rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid')
+rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='specimenid');dim(rel_rec)
 
 # harmonise character strings
 
-rel_rec <- cleanTagData(input = rel_rec)
+rel_rec <- cleanTagData(input = rel_rec);dim(rel_rec)
 
 # Change factors to characters and generate R-format timestamps
 
-rel_rec <- formatTagdata(input=rel_rec)
+rel_rec <- formatTagdata(input=rel_rec);dim(rel_rec)
 
 # Convert weights to lengths
 
@@ -77,15 +77,16 @@ rel_rec$rec_kg[rel_rec$speciescode == 'BET'] <- lenW_BET(lf=rel_rec$rec_len[rel_
 rel_rec$rec_kg[rel_rec$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec$rec_len[rel_rec$speciescode == 'SKJ'])
 rel_rec$rec_kg[rel_rec$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec$rec_len[rel_rec$speciescode == 'YFT'])
 rel_rec$rec_kg[rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$rec_len[rel_rec$speciescode == 'LTA'])/1000
+dim(rel_rec)
 
 
 # Add on useful time vectors, e.g. julian day, month, year
 
-rel_rec <- timeVectors(input=rel_rec)
+rel_rec <- timeVectors(input=rel_rec);dim(rel_rec)
 
 # Add on useful spatial information
 
-rel_rec <- spatialVectors(input=rel_rec)
+rel_rec <- spatialVectors(input=rel_rec);dim(rel_rec)
 
 
 # # Simplify rel_rec
@@ -98,7 +99,7 @@ rel_rec <- spatialVectors(input=rel_rec)
 # Quality assessment
 
 rel_rec <- tagDataValidation(input=rel_rec)
-table(rel_rec$score)
+dim(rel_rec);table(rel_rec$score)
 
 # Calculated distance between release and recovery
 
@@ -108,14 +109,14 @@ rel_rec$nautical_m <- rel_rec$kms * 0.5399 # nautical miles
 rel_rec$month_fraction <- rel_rec$days_at_liberty/30.43 # month fraction
 rel_rec$migration_per_month <- rel_rec$nautical_m/rel_rec$month_fraction #migration distance per month
 
-x<-rel_rec[!is.na(rel_rec$kms) & rel_rec$kms > 7000,]
+x<-rel_rec[!is.na(rel_rec$kms) & rel_rec$kms > 4000,]
 x
 
 
 # Plotting 
 # frequencies
-fplot(input=rel_rec[rel_rec$score==6,],what.to.plot='kms',what.species='YFT',max.obs=5000)
-fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species='YFT',max.obs=350)
+fplot(input=rel_rec[rel_rec$score>2,],what.to.plot='kms',what.species='YFT',max.obs=5000)
+fplot(input=rel_rec[rel_rec$score>2,],what.to.plot='days_at_liberty',what.species='YFT',max.obs=400)
 fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=350)
 fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
 fplot(input=rel_rec,what.to.plot='kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
@@ -134,7 +135,8 @@ mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_
 mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
 mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
 
-mapPointsSpeciesByMonth(what.species = 'SKJ')
+mapPointsSpeciesByMonth(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET"), what.species = 'SKJ')
+mapPointsSpeciesByMonth(input = rel_rec, what.longitude='rec_longitude',what.latitude='rec_latitude',what.species = c("SKJ","LTA","YFT","BET"), what.facet='rec_yrmon')
 
 #hexbins
 mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=100)
@@ -193,7 +195,6 @@ pander(nTagsRelByCountry())
 #e tags
 
 nElectronicTagsTab()
-
 
 # FAD moratorium
 jf2017 <- rel_rec[rel_rec$year ==2017 & rel_rec$month %in% c('enero','febrero'),]
