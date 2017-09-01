@@ -118,21 +118,5 @@ input1 <- input[-c(xx.yy),]
   
 }
 
-map('world',xlim=c(-30,20),ylim=c(-20,20))
-
-plot(fadmoratorium,add=T)
-points(input$longitude[!is.na(input$fmor17)],input$latitude[!is.na(input$fmor17)])
-points(input$rec_longitude[!is.na(input$rec_fmor17)],input$rec_latitude[!is.na(input$rec_fmor17)],col='red')
-points(input$rec_longitude,input$rec_latitude,col='green')
-
-x <- recoveries[recoveries$date>"2016-12-30" & recoveries$date < "2017-03-01",]
-
-points(rel_rec$rec_longitude,rel_rec$rec_latitude,col='blue')
-points(rel_rec$rec_longitude[rel_rec$rec_yrmon== 'ene 2017'],rel_rec$rec_latitude[rel_rec$rec_yrmon=='ene 2017'],col='green')
-points(rel_rec$rec_longitude[rel_rec$rec_yrmon== 'feb 2017'],rel_rec$rec_latitude[rel_rec$rec_yrmon=='feb 2017'],col='red')
-x1<- rel_rec[rel_rec$rec_yrmon == 'ene 2017',]
-points(x1$rec_longitude,x1$rec_latitude,col='yellow')
-x2<- rel_rec[rel_rec$rec_yrmon == 'feb 2017',]
-points(x2$rec_longitude,x2$rec_latitude,col='orange')
 
 

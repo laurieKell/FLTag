@@ -135,7 +135,14 @@ mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_
 mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
 mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
 
-mapPointsSpeciesByMonth(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET"), what.species = 'SKJ')
+mapPoints(input = rel_rec[rel_rec$eez == 'Spanish EEZ (Canary Islands)',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET","SKJ"))
+
+cislas <- rel_rec[rel_rec$eez == 'Spanish EEZ (Canary Islands)',]
+map('world',xlim=c(-30,30),ylim=c(-10,45))
+points(cislas$longitude,cislas$latitude,col=2)
+
+
+mapPointsSpeciesByMonth(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET"))
 mapPointsSpeciesByMonth(input = rel_rec, what.longitude='rec_longitude',what.latitude='rec_latitude',what.species = c("SKJ","LTA","YFT","BET"), what.facet='rec_yrmon')
 
 #hexbins
@@ -143,13 +150,18 @@ mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',w
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"),nbins=200)
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("BET"),nbins=300)
 
+# Nautical miles
+tapply(rel_rec$nautical_m,rel_rec$speciescode,summary,na.rm=T)
+#TaL
+tapply(rel_rec$days_at_liberty,rel_rec$speciescode,summary,na.rm=T)
+
 
 #tracks
 mapTrack(input = rel_rec[rel_rec$score==6,], what.species='YFT')
 mapTrack(input = rel_rec[rel_rec$score==6,],what.species='BET')
 mapTrack(input = rel_rec[rel_rec$score==6,],what.species='SKJ')
 mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA'))
-mapTrack(what.species=c('SKJ','YFT'))
+mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA','SKJ','YFT'))
 
 
 #scatterpids
@@ -205,8 +217,13 @@ table(jf2017$rec_fmor17,jf2017$speciescode)
 
 #growth tracks
 
-growthTrack(input[input$score > 4,],what.species ='YFT')
-growthTrack(input[input$score > 5,],what.species =c('BET','LTA','SKJ','YFT'))
+growthTrack(input=rel_rec[rel_rec$score > 3,],what.species ='YFT')
+growthTrack(input=rel_rec[rel_rec$score > 3,],what.species =c('BET','LTA','SKJ','YFT'))
 
+#Recoveries by EEZ
 
+table(rel_rec$rec_eez,rel_rec$speciescode)
+plot(rel_rec$rec_longitude,rel_rec$rec_latitude,pch='.')
+plot(eez,add=TRUE)
+points(recoveries$longitude,recoveries$latitude,col='red',pch='.')
 

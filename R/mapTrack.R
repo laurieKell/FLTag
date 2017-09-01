@@ -22,3 +22,16 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ')
   
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

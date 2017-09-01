@@ -39,6 +39,7 @@ Collate:
 	nElectronicTagsTab.R
 	mapPointsSpeciesByMonth.R
 	growthTrack.R
+	convertPointToLine.R
 VignetteBuilder: 
     knitr
 Suggests:
