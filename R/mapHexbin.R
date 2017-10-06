@@ -11,7 +11,7 @@ mapHexbin <- function(input = rel_rec,what.species = 'SKJ',what.longitude='longi
       scale_fill_gradientn(colours=heat.colors(10),trans='log',labels=my_breaks,breaks=my_breaks)+
       geom_polygon(data=eez,aes(x=long,y=lat,group=group),color='lightblue',fill=NA,size=0.4)+
       geom_polygon(data=world,aes(x=long,y=lat,group=group),col='darkgreen',fill='darkgreen')+
-    theme(plot.margin=unit(c(1,1,1,1),"cm"),
+    theme(plot.margin=unit(c(1,1,1,1),"cm"),strip.text = element_text(size=20),
           axis.text.x =element_text(colour="grey20",size=12,face="plain"),
           axis.text.y=element_text(colour="grey20",size=12,face="plain"),
           axis.title.y=element_text(size=15))+
@@ -19,3 +19,4 @@ mapHexbin <- function(input = rel_rec,what.species = 'SKJ',what.longitude='longi
     
   
 }
+

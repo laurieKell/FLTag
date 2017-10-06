@@ -1,12 +1,15 @@
-mapScatterpie <- function (input = rel_rec,what.species = c('BET','LTA','SKJ','YFT'),sf=2)
+mapScatterpie <- function (input = rel_rec,what.longitude='longitude',what.latitude='latitude',what.species = c('BET','LTA','SKJ','YFT'),what.yrmon='yrmon',sf=2)
  
 {
-  #input <- rel_rec;what.species <- c('SKJ','YFT')
-  ns <- length(what.species)
-  input_rel <- input
-  input_rec <- input[!is.na(input$score),]
   
-  fish_rel <- data.frame(longitude=input_rel$longitude,latitude=input_rel$latitude,yrmon=input_rel$yrmon,speciescode=input_rel$speciescode)
+ 
+  
+  #input <- rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c('BET','SKJ','YFT');what.yrmon='yrmon';sf=4
+  input <- input[!is.na(input$score),]
+  ns <- length(what.species)
+  
+  
+  fish_rel <- data.frame(longitude=input[,what.longitude],latitude=input[,what.latitude],yrmon=input[,what.yrmon],speciescode=input$speciescode)
   fish_rel0 <- table(round(fish_rel$longitude,1),round(fish_rel$latitude,1),fish_rel$yrmon,fish_rel$speciescode)
   fish_rel1 <- melt(fish_rel0)
   dimnames(fish_rel1)[[2]] <- c('longitude','latitude','yrmon','speciescode','freq')

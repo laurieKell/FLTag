@@ -1,4 +1,3 @@
-
 #Example script of analysis using FLTag##
 
 library(spatial)
@@ -32,11 +31,12 @@ library(FLTag)
 # attach to database
 
 odbcCloseAll()
+
 aottp <-  odbcConnect("aottp-local", case ="postgresql", believeNRows=FALSE)
 
 # get AOTTP data needed 
 releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled ='false';");dim(releases)
-recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF';");dim(recoveries)
+recoveries <- sqlQuery(aottp, "SELECT * from recoveries WHERE rcstagecode LIKE 'RCF' AND date > '2016-07-01';");dim(recoveries)
 persons <- sqlQuery(aottp, "SELECT * from persons WHERE persontagger = TRUE;")
 persons$personname <- as.character(persons$personname)
 persons$personcountryid[persons$personname == 'GAIZKA BIDEGAIN'] <- 21
@@ -88,14 +88,6 @@ rel_rec <- timeVectors(input=rel_rec);dim(rel_rec)
 
 rel_rec <- spatialVectors(input=rel_rec);dim(rel_rec)
 
-
-# # Simplify rel_rec
-# 
-# rel_rec <- rel_rec[,c("speciescode","rcstagecode","electronictagcode1","ctcode1","ctcode2","ctcolor1","ctcolor2","date","yrmon","time","latitude","longitude","gearcode","vesselid","schooltype","depth","len","taggerid",
-#                       "persontypecode","chktagcanceled","specimenid","taggrpid","rcstageid","surveycode","zone","areazone","recovered","rec_longitude","rec_latitude","rec_len",
-#                       "rec_gearcode","rec_date","rec_time","rec_yrmon","timestamp","rec_timestamp","kg","rec_kg","month","rec_month","jday","rec_jday","days_at_liberty","eez",
-#                       "lme","ocean","rec_eez","rec_lme","rec_ocean")]
-# 
 # Quality assessment
 
 rel_rec <- tagDataValidation(input=rel_rec)
@@ -113,11 +105,17 @@ x<-rel_rec[!is.na(rel_rec$kms) & rel_rec$kms > 4000,]
 x
 
 
+
 # Plotting 
-# frequencies
+# Frequencies
+
 fplot(input=rel_rec[rel_rec$score>2,],what.to.plot='kms',what.species='YFT',max.obs=5000)
-fplot(input=rel_rec[rel_rec$score>2,],what.to.plot='days_at_liberty',what.species='YFT',max.obs=400)
-fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=350)
+fplot(input=rel_rec[rel_rec$score>2,],what.to.plot='days_at_liberty',what.species='YFT',max.obs=500)
+fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=400)
+fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','YFT'),max.obs=420)
+
+
+
 fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
 fplot(input=rel_rec,what.to.plot='kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
 fplot(input=rel_rec,what.to.plot='rec_kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
@@ -127,13 +125,23 @@ fplot(input=rel_rec,what.to.plot='rec_len',what.species=c('BET','SKJ','LTA','YFT
 
 #maps
 #points
+mapPoints(input = rel_rec,what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT"),what.size=2)
+
 mapPoints(input = rel_rec,what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","LTA","YFT","BET"))
 mapPoints(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"))
 mapPoints(input = rel_rec[!is.na(rel_rec$electronictagcode1),],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
 mapPoints(input = rel_rec[!is.na(rel_rec$electronictagcode1),],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","YFT","BET"))
-mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","YFT","BET"))
-mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("SKJ","YFT","BET"))
+mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("YFT","BET"))
+
+mapPoints(input = rel_rec[rel_rec$model == 'Lotek-2810',],what.longitude = "longitude",what.latitude="latitude", what.species = c("BET","YFT"))
+
 mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
+mapPoints(input = rel_rec[rel_rec$model == 'MiniPAT-348C',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET"))
+
+data(iotc)
+dimnames(iotc)[[2]][1]<-'speciescode'
+mapPoints(input = iotc,what.longitude = "rel_lon",what.latitude="rel_lat", what.species = c("YFT","BET"),location=c(60,0))
+
 
 mapPoints(input = rel_rec[rel_rec$eez == 'Spanish EEZ (Canary Islands)',],what.longitude = "longitude",what.latitude="latitude", what.species = c("YFT","BET","SKJ"))
 
@@ -146,7 +154,7 @@ mapPointsSpeciesByMonth(input = rel_rec, what.longitude='longitude',what.latitud
 mapPointsSpeciesByMonth(input = rel_rec, what.longitude='rec_longitude',what.latitude='rec_latitude',what.species = c("SKJ","LTA","YFT","BET"), what.facet='rec_yrmon')
 
 #hexbins
-mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=100)
+mapHexbin(input = rel_rec, what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=120)
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"),nbins=200)
 mapHexbin(input = rel_rec,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("BET"),nbins=300)
 
@@ -157,17 +165,22 @@ tapply(rel_rec$days_at_liberty,rel_rec$speciescode,summary,na.rm=T)
 
 
 #tracks
-mapTrack(input = rel_rec[rel_rec$score==6,], what.species='YFT')
-mapTrack(input = rel_rec[rel_rec$score==6,],what.species='BET')
-mapTrack(input = rel_rec[rel_rec$score==6,],what.species='SKJ')
+mapTrack(input = rel_rec[rel_rec$score==6 & rel_rec$nautical_m>1000,], what.species='BET',what.size=2)
+mapTrack(input = rel_rec[rel_rec$score==6,],what.species='SKJ',what.gear='BB')
+mapTrack(input = rel_rec[rel_rec$score==6,],what.species='SKJ',what.gear='PS')
 mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA'))
-mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA','SKJ','YFT'))
+mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='BB')
+mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='PS')
+mapTrack(input = rel_rec[rel_rec$score ==6,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='LL')
 
 
 #scatterpids
 mapScatterpie()
 mapScatterpie(input=rel_rec,what.species=c('BET','YFT'),sf=3)
-mapScatterpie(input=rel_rec,what.species=c('BET','SKJ','YFT'),sf=3)
+mapScatterpie(input=rel_rec,what.species=c('BET','SKJ','YFT'),sf=5)
+mapScatterpie(input=rel_rec,what.longitude='rec_longitude',
+              what.latitude='rec_latitude',what.yrmon='rec_yrmon',what.species=c('BET','SKJ','YFT'),sf=3)
+
 
 mapScatterpie(input=rel_rec[year(rel_rec$date)==2016,],what.species=c('BET','SKJ','YFT'),sf=4)
 mapScatterpie(input=rel_rec[year(rel_rec$date)==2017,],what.species=c('BET','SKJ','YFT'),sf=4)
@@ -182,11 +195,13 @@ pander(relRecSummaryTab()$Recoveries)
 TagSheddingTab()$Double_Tag_Nos
 TagSheddingTab()$Tag_Shed_Nos
 TagSheddingTab()$Tag_Shed_Perc
-TagSheddingTab()
+TagSheddingTab(input=rel_rec[rel_rec$quad == 'NE',])
 
 #chemically-tagged totals
 
 ChemTaggingTab()
+
+table(releases$ctcolor1,releases$speciescode)
 
 #releases and recoveries in time
 
@@ -208,6 +223,8 @@ pander(nTagsRelByCountry())
 
 nElectronicTagsTab()
 
+x<- rel_rec[rel_rec$model=='Lotek-2810' & rel_rec$recovered ==T,]
+
 # FAD moratorium
 jf2017 <- rel_rec[rel_rec$year ==2017 & rel_rec$month %in% c('enero','febrero'),]
 table(jf2017$fmor17)
@@ -217,8 +234,20 @@ table(jf2017$rec_fmor17,jf2017$speciescode)
 
 #growth tracks
 
-growthTrack(input=rel_rec[rel_rec$score > 3,],what.species ='YFT')
-growthTrack(input=rel_rec[rel_rec$score > 3,],what.species =c('BET','LTA','SKJ','YFT'))
+growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS' & rel_rec$days_at_liberty > 89,],what.species ='YFT')
+growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS',],what.species =c('BET','LTA','SKJ','YFT'))
+growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS'& rel_rec$days_at_liberty > 29,],what.species =c('BET','LTA','SKJ','YFT'))
+
+growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'BB' & rel_rec$days_at_liberty > 270,],what.species =c('BET','YFT'),what.size=1)
+
+By quadrant
+
+q1 <- rel_rec[rel_rec$tagseeding == 0,]
+q1 <- table(q1$speciescode,q1$quad)
+Total <- apply(q1,2,sum,na.rm=T)
+q1 <- rbind(q1,Total)
+pander(q1)
+
 
 #Recoveries by EEZ
 
@@ -226,4 +255,52 @@ table(rel_rec$rec_eez,rel_rec$speciescode)
 plot(rel_rec$rec_longitude,rel_rec$rec_latitude,pch='.')
 plot(eez,add=TRUE)
 points(recoveries$longitude,recoveries$latitude,col='red',pch='.')
+
+#Probability of being re-caught
+
+rel_rec$bin <- ifelse(rel_rec$recovered == TRUE,1,0)
+data1 <- rel_rec[!is.na(rel_rec$len),]
+data1 <- data1[data1$speciescode %in% c('BET','LTA','SKJ','YFT'),]
+data1$speciescode <- as.factor(data1$speciescode)
+data1$rec_gearcode <- as.factor(data1$rec_gearcode)
+ z1 <- gam(bin ~ s(len,by=speciescode)+s(longitude,latitude,days_at_liberty,by=speciescode), data=data1,family='quasibinomial' ) # P(Recapture) depends strongly on release location.
+ #bet.z1 <- mgcv(bin ~ s(longitude,latitude)+s(len,by=speciescode), data=rel_rec[!is.na(rel_rec$len) & rel_rec$speciescode == 'BET',],family='quasibinomial' )
+# 
+ #bet <- rel_rec[!is.na(rel_rec$len) & rel_rec$speciescode == 'BET',]
+ #bet$P_capture <- round(predict(bet.z1,bet,type='response'),2)
+
+gd <- expand.grid(speciescode=c('BET','LTA','SKJ','YFT'),len=52,latitude=15,longitude=-18)
+
+data1$P_capture <- round(predict(z1,data1,type='response'),2)
+
+Atl <- c(-30,0)
+wAfMap <- get_map(location=Atl,source='google',maptype='satellite',crop=TRUE,zoom=3)
+
+ggmap(wAfmap)
+
+
+Atl <- c(-30,0)
+wAfMap <- get_map(location=Atl,source='google',maptype='satellite',crop=TRUE,zoom=3)
+ggmap(wAfMap) +
+geom_point(aes(x=jitter(longitude),y=jitter(latitude),color=P_capture,size=P_capture),data=data1[data1$speciescode =='YFT',]) +
+  scale_color_gradientn(colours=heat.colors(100)) +
+  facet_wrap(~speciescode,ncol=2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
