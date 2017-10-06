@@ -1,6 +1,6 @@
 convertPointToLine <- function(input = rel_rec)
 {
-  input = rel_rec
+  #input = rel_rec
   #world <- map_data('world');
   #ggplot() + geom_polygon(data=world,aes(x=long,y=lat,group=group),col='darkgreen',fill='darkgreen') +
   
@@ -25,3 +25,48 @@ SLDF
 
 #plot(SLDF[SLDF@data$rec_gearcode == 'PS' & SLDF@data$speciescode == 'SKJ',])
 #plot(SLDF[SLDF@data$rec_gearcode == 'BB' & SLDF@data$speciescode == 'BET',])
+
+# library(raster)
+# 
+# skj.ras <- SLDF[SLDF@data$rec_gearcode == 'PS' & SLDF@data$speciescode == 'SKJ',]
+# 
+# r <- raster(ncol=100, nrow=100)
+# extent(r) <- extent(skj.ras)
+# 
+# skj.ras@data$timestamp <- as.POSIXct(skj.ras@data$timestamp)
+# skj.ras@data$rec_timestamp <- as.POSIXct(skj.ras@data$rec_timestamp)
+# skj.ras@data$weekn <- week(skj.ras@data$timestamp)
+# skj.ras@data$dayn <- floor(julian(skj.ras@data$timestamp,origin="2016-01-01"))
+# 
+# wo <- sort(unique(skj.ras@data$weekn))
+# 
+# for(i in wo )
+#   
+# { print(i)
+#   Demo_ras = rasterize(skj.ras[skj.ras@data$weekn == i,],r)
+#   par(mfrow=c(1,1))
+#   image(Demo_ras,xlab="",ylab="",xlim=c(-50,50),ylim=c(-50,50))
+#   map('world',add=T,fill=T,col='green')
+# }
+# 
+# slotNames(Demo_ras)
+# x<-Demo_ras@data@values
+# summary(x)
+# atbs <- Demo_ras@data@attributes
+# atbs[[1]][1:50,]
+# 
+# points(releases$longitude[releases$speciescode == 'SKJ'], releases$latitude[releases$speciescode == 'SKJ'],pch=16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
