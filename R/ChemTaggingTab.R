@@ -1,6 +1,6 @@
 ChemTaggingTab <- function(input=rel_rec){
   #input <- rel_rec
-  chem_tagged <- input[input$ctcolor1==2,]
+  chem_tagged <- input[input$tagcolor1==2,]
   ct <- table(chem_tagged$speciescode,chem_tagged$recovered)
   ct[,1]<-ct[,1]+ct[,2]
   dimnames(ct)[[2]]<- c('released','recovered')
