@@ -1,7 +1,13 @@
-TagSeedingTab <- function(input=rel_rec){
-#input <- rel_rec
+TagSeedingTab <- function(input=tseed){
+
+  tagSeedDat <- input
 #Releases first
-tagSeedDat <- input[input$tagseeding == 1,]
+
+rci <- which(tagSeedDat$rcstagecode %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
+tagSeedDat$recovered <- FALSE
+tagSeedDat$recovered[rci] <- TRUE
+
+
 tagSeed <- data.frame(table(tagSeedDat$speciescode,tagSeedDat$tsplace,tagSeedDat$recovered))
 colnames(tagSeed)<-c('speciescode','tsplace','recovered','Freq')
 ntsp <- length(unique(tagSeed$tsplace))
