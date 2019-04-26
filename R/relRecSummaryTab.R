@@ -1,22 +1,27 @@
 relRecSummaryTab <- function(input=rel_rec)
 {
+#input <- rel_rec
+#rci <- which(rel_rec$rcstagecode_final %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
+#rei <- which(rel_rec$rcstagecode_final %in% c("R-1","R-2","R-3","R-4","R-5","RCF"))  # Where are the releases
 
-xyt1 <- table(input$speciescode,input$rcstagecode)
-Total_Rel_Col <- apply(xyt1,1,sum)
+tab_Rels_Recs_tots <- table(rel_rec$speciescode,rel_rec$recovered)
+dimnames(tab_Rels_Recs_tots)[[2]]<-c('Nos_Released','Nos_Recovered')
 
-Releases <-cbind(xyt1,Total_Rel_Col)
-Total_Rel_Row <- apply(Releases,2,sum)
-Releases <- rbind(Releases,Total_Rel_Row)
-#pander(Releases)
+tab_Rels_Recs_tots[,'Nos_Released'] <- tab_Rels_Recs_tots[,'Nos_Recovered']+tab_Rels_Recs_tots[,'Nos_Released']
 
-Total_Rec <- table(input$recovered,input$speciescode)[2,]
-Perc_Rec <- round((Total_Rec/Total_Rel_Col),2)*100
-Recoveries <- rbind(Total_Rel_Col,Total_Rec,Perc_Rec)
-trel <- sum(Recoveries[1,])
-trec <- sum(Recoveries[2,])
-avP  <- round((trec/trel),1)*100
-Recoveries <- cbind(Recoveries,c(trel,trec,avP))
-#pander(Recoveries)
-out<-list(Releases=Releases,Recoveries=Recoveries)
-out
+
+
+Perc_Rec <- round((tab_Rels_Recs_tots[,'Nos_Recovered']/tab_Rels_Recs_tots[,'Nos_Released'])*100,1)
+
+tab_Rels_Recs_tots <- cbind(tab_Rels_Recs_tots,Perc_Rec)
+
+tab_Rels_Recs_tots <- as.data.frame(tab_Rels_Recs_tots)
+
+
+Totals_Col <- apply(tab_Rels_Recs_tots,2,sum)
+Totals_Col['Perc_Rec'] <- NA
+tab_Rels_Recs_tots <- rbind(tab_Rels_Recs_tots,Totals_Col)
+dimnames(tab_Rels_Recs_tots)[[1]][dim(tab_Rels_Recs_tots)[1]]<-'Total'
+tab_Rels_Recs_tots
+
 }

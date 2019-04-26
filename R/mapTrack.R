@@ -1,12 +1,13 @@
 mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB','GILL','UNKN','LL','SPOR'),
-                     what.size=1,lon.limits=c(-80,30),lat.limits=c(-50,50))
+                     what.size=1,lon.limits=c(-80,30),lat.limits=c(-50,50),what.distance = 500)
 {
   #input = rel_rec; what.species = c("YFT");  
-  #what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');
+  # what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');what.size<-1
   
-  #what.size<-1
     input <- input[input$speciescode %in% what.species,]
     input <- input[input$regearcode %in% what.gear,]
+    #input$quarter <- quarter(input$redate)
+    input$remonth = factor(input$remonth, levels = month.name)
   input <- fortify(input)
   #wAfMap <- get_map(location=location,source='google',maptype='satellite',crop=TRUE,zoom=zz)
   #ggmap(wAfMap) +
@@ -15,10 +16,15 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB
     geom_polygon(data=world,aes(x=long,y=lat,group=group),col='black',fill='darkgreen')+
   
     coord_fixed(1,xlim=lon.limits,ylim=lat.limits)  +
-   geom_segment(data=input,
-                 aes(x=relonx,y=relaty,xend=rclonx,yend=rclaty,group=specimenid,color=speciescode),
+   geom_segment(data=input[input$distance_nm >= what.distance,],
+                 aes(x=relonx,y=relaty,xend=rclonx,yend=rclaty,group=specimenid,color=relen),
               arrow = arrow(length = unit(0.2,"cm")),size=what.size,alpha=1) +
-  facet_wrap(~ reyrmon, ncol=5) +
+      geom_point(data=input,
+                 aes(x=relonx,y=relaty),
+                 alpha=1,size=.5,color=5) +
+      facet_wrap(~ remonth, ncol=4) +
+      scale_color_gradient(low="red", high="yellow") +
+      #facet_wrap( ~ requarter, ncol=2) +
     theme(plot.margin=unit(c(1,1,1,1),"cm"),
           axis.text.x =element_text(colour="grey20",size=12,face="plain"),
           axis.text.y=element_text(colour="grey20",size=12,face="plain"),
@@ -27,8 +33,8 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB
 }
 
 
-
-
+# 
+# mapTrack(input=rel_rec, what.species ='YFT',what.size=.2, what.distance = 500)
 
 
 

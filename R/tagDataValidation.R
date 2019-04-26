@@ -1,22 +1,21 @@
 tagDataValidation <- function(input=rel_rec){
   
-  #input <- rel_rec
+  # input <- rel_rec
   # Replace 0s with NAs
-    
   
   val.df <- data.frame(longitude=rep(NA,length(input[,1])))
-  val.df$longitude <- ifelse(is.na(input$longitude),0,1)
-  val.df$latitude <- ifelse(is.na(input$latitude),0,1)
-  val.df$rec_longitude <- ifelse(is.na(input$rec_longitude),0,1)
-  val.df$rec_latitude <- ifelse(is.na(input$rec_latitude),0,1)
-  val.df$timestamp <- ifelse(is.na(input$timestamp),0,1)
-  val.df$rec_timestamp <- ifelse(is.na(input$rec_timestamp),0,1)
-  val.df$len <- ifelse(is.na(input$len),0,1)
-  val.df$rec_len <- ifelse(is.na(input$rec_len),0,1)
+  val.df$relonx <- ifelse(is.na(input$relonx),0,1)
+  val.df$relaty <- ifelse(is.na(input$relaty),0,1)
+  val.df$rclonx <- ifelse(is.na(input$rclonx),0,1)
+  val.df$rclaty <- ifelse(is.na(input$rclaty),0,1)
+  val.df$redate <- ifelse(is.na(input$redate),0,1)
+  val.df$rcdate <- ifelse(is.na(input$rcdate),0,1)
+  val.df$relen <- ifelse(is.na(input$relen),0,1)
+  val.df$rclen <- ifelse(is.na(input$rclen),0,1)
   
   
-  val.df$valid.len <- ifelse(input$len > input$rec_len, 0,1)
-  val.df$valid.timestamp <- ifelse(input$timestamp > input$rec_timestamp, 0, 1)
+  val.df$valid.len <- ifelse(input$relen > input$rclen, 0,1)
+  val.df$valid.timestamp <- ifelse(input$redate > input$rcdate, 0, 1)
   
   
   

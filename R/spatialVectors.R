@@ -1,6 +1,7 @@
 spatialVectors <- function(input=rel_rec)
 {
 #input <- rel_rec
+#input<- iotc[1:10000,]
 data("eez") # add on names of EEZs
 data("seas")
 data("lme") # large marine ecosystems
@@ -17,65 +18,81 @@ proj4string(seas) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 
 # find missing release locations
 
-  xx <- (1:length(input[,1]))[is.na(input$longitude)]
-  yy <- (1:length(input[,1]))[is.na(input$latitude)]
+  xx <- (1:length(input[,1]))[is.na(input$relonx)]
+  yy <- (1:length(input[,1]))[is.na(input$relaty)]
   xx.yy<-unique(c(xx,yy))
+
+ if(length(xx.yy) > 0)
+{
 input_na <- input[xx.yy,]
 input1 <- input[-c(xx.yy),]
+#print('Missing locations')
+}
+else
+  {
+#print('No missing locations')
+input1 <- input
+}
 
-  input_xy <- data.frame(longitude=input1$longitude,latitude=input1$latitude)
+  input_xy <- data.frame(longitude=input1$relonx,latitude=input1$relaty)
   coordinates(input_xy) <- c("longitude", "latitude")
   proj4string(input_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  
   
   input_xy <- SpatialPointsDataFrame(input_xy,data=data.frame(speciescode=input1$speciescode))
   
   # Add on EEZ
   
-  input1$eez <- as.character(over(input_xy, eez)$EEZ)
-  input1$eez[is.na(input1$eez)] <- 'High Seas'
-  input1$eez[input1$eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
-  input1$eez[input1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
-  input1$eez <- gsub('Exclusive Economic Zone','EEZ',input1$eez)
-  
+  input1$reeez <- as.character(over(input_xy, eez)$EEZ)
+  input1$reeez[is.na(input1$eez)] <- 'High Seas'
+  input1$reeez[input1$eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
+  input1$reeez[input1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
+  input1$reeez <- gsub('Exclusive Economic Zone','EEZ',input1$reeez)
   # Add on LME
-  input1$lme <- as.character(over(input_xy, lme)$LME_NAME)
+  input1$relme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
-  input1$ocean <- as.character(over(input_xy, seas)$NAME)
+  input1$reocean <- as.character(over(input_xy, seas)$NAME)
   
-    
-  input_na$eez <- NA
-  input_na$lme <- NA
-  input_na$ocean <- NA
+  #In FadMoratorium-releases
+  
+  input1$refmor <- over(input_xy, fadmoratorium)$re
+
+  
+  
+  if(length(xx.yy) > 0)
+    {
+  input_na$reeez <- NA
+  input_na$relme <- NA
+  input_na$reocean <- NA
+  input_na$refmor  <-NA
   input <- rbind(input1,input_na)
+  }
   
-  input$quad <- rep(NA,length(input[,1]))
-  input$quad[input$longitude >= -30 & input$latitude >= 10] <- 'NE'
-  input$quad[input$longitude >= -30 & input$latitude <= 10] <- 'SE'
+  else{
+    input <- input1
+  }
   
-  input$quad[input$longitude < -30 & input$latitude > 10] <- 'NW'
-  input$quad[input$longitude < -30 & input$latitude < 10] <- 'SW'
+  input$requad <- rep(NA,length(input[,1]))
+  input$requad[input$relonx >= -30 & input$relaty >= 10] <- 'NE'
+  input$requad[input$relonx >= -30 & input$relaty <= 10] <- 'SE'
   
-  #FadMoratorium-releases
+  input$requad[input$relonx < -30 & input$relaty > 10] <- 'NW'
+  input$requad[input$relonx < -30 & input$relaty < 10] <- 'SW'
   
-  input$fmor17 <- rep(NA,length(input[,1]))
-  input$fmor17[input$longitude > -20 & input$latitude > -4 & input$latitude < 5 & input$year == 2017 & input$month %in% c('enero','febrero')] <- 'fmor17'
-  
-  
-  
-  
+
   #########################################
   # add on vectors for recovery locations###
   #########################################
   
   # find missing recovery locations
   
-  xx <- (1:length(input[,1]))[is.na(input$rec_longitude)]
-  yy <- (1:length(input[,1]))[is.na(input$rec_latitude)]
+  xx <- (1:length(input[,1]))[is.na(input$rclonx)]
+  yy <- (1:length(input[,1]))[is.na(input$rclaty)]
   xx.yy<-unique(c(xx,yy))
   input_na <- input[xx.yy,]
   input1 <- input[-c(xx.yy),]
   
-  input_xy <- data.frame(longitude=input1$rec_longitude,latitude=input1$rec_latitude)
+  input_xy <- data.frame(longitude=input1$rclonx,latitude=input1$rclaty)
   coordinates(input_xy) <- c("longitude", "latitude")
   proj4string(input_xy) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
   
@@ -83,35 +100,38 @@ input1 <- input[-c(xx.yy),]
   
   # Add on EEZ
   
-  input1$rec_eez <- as.character(over(input_xy, eez)$EEZ)
-  input1$rec_eez[is.na(input1$rec_eez)] <- 'High Seas'
-  input1$rec_eez[input1$rec_eez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
-  input1$rec_eez[input1$rec_eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
-  input1$rec_eez <- gsub('Exclusive Economic Zone','EEZ',input1$rec_eez)
+  input1$rceez <- as.character(over(input_xy, eez)$EEZ)
+  input1$rceez[is.na(input1$rceez)] <- 'High Seas'
+  input1$rceez[input1$rceez == "Western Saharan Exclusive Economic Zone"] <- "Mauritanian Exclusive Economic Zone"
+  input1$rceez[input1$rceez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
+  input1$rceez <- gsub('Exclusive Economic Zone','EEZ',input1$rceez)
   
   # Add on LME
-  input1$rec_lme <- as.character(over(input_xy, lme)$LME_NAME)
+  input1$rclme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
-  input1$rec_ocean <- as.character(over(input_xy, seas)$NAME)
+  input1$rcocean <- as.character(over(input_xy, seas)$NAME)
   
-  input_na$rec_eez <- NA
-  input_na$rec_lme <- NA
-  input_na$rec_ocean <- NA
+  #In FadMoratorium-recoveries
+  
+  input1$rcfmor <- over(input_xy, fadmoratorium)$re
+  
+  
+  input_na$rceez <- NA
+  input_na$rclme <- NA
+  input_na$rcocean <- NA
+  input_na$rcfmor <- NA
   
   input <- rbind(input1,input_na)
   
-  input$rec_quad <- rep(NA,length(input[,1]))
-  input$rec_quad[input$rec_longitude >= -30 & input$rec_latitude >= 10] <- 'NE'
-  input$rec_quad[input$rec_longitude >= -30 & input$rec_latitude <= 10] <- 'SE'
+  input$rcquad <- rep(NA,length(input[,1]))
+  input$rcquad[input$rclonx >= -30 & input$rclaty >= 10] <- 'NE'
+  input$rcquad[input$rclonx >= -30 & input$rclaty <= 10] <- 'SE'
   
-  input$rec_quad[input$rec_longitude < -30 & input$rec_latitude > 10] <- 'NW'
-  input$rec_quad[input$rec_longitude < -30 & input$rec_latitude < 10] <- 'SW'
+  input$rcquad[input$rclonx < -30 & input$rclaty > 10] <- 'NW'
+  input$rcquad[input$rclonx < -30 & input$rclaty < 10] <- 'SW'
   
   
-  #FadMoratorium-releases
-  
-  input$rec_fmor17 <- rep(NA,length(input[,1]))
-  input$rec_fmor17[input$rec_longitude > -20 & input$rec_latitude > -4 & input$rec_latitude < 5 & input$rec_year == 2017 & input$rec_month %in% c('enero','febrero')] <- 'rec_fmor17'
+ 
   
   
   input

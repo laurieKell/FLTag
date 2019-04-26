@@ -14,6 +14,7 @@ matchTagsA <- function(rels=releases,recs=recoveries,mtch = 'specimenid')
   rels$rec_gearcode <- recs$gearcode[mm]
   rels$rec_date <- recs$date[mm]
   rels$rec_time <- recs$time[mm]
+  rels$rec_team <- recs$team[mm]
   rels$recovered <-ifelse(is.na(mm),F,T)
   
   rels  
