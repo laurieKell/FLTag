@@ -1,7 +1,7 @@
 Version: 1.0
 
 RestoreWorkspace: Default
-SaveWorkspace: Default
+SaveWorkspace: No
 AlwaysSaveHistory: Default
 
 EnableCodeIndexing: Yes
@@ -14,4 +14,5 @@ LaTeX: pdfLaTeX
 
 BuildType: Package
 PackageUseDevtools: Yes
+PackagePath: C:/FLTag
 PackageInstallArgs: --no-multiarch --with-keep.source

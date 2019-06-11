@@ -1,13 +1,14 @@
 # #Example script of analysis using FLTag##
 
 # options(OutDec= ".")
-# Sys.setlocale("LC_MESSAGES", 'en_GB.UTF-8')
-# Sys.setenv(LANG = "en_US.UTF-8")
+Sys.setlocale("LC_MESSAGES", 'en_GB.UTF-8')
+Sys.setenv(LANG = "en_US.UTF-8")
 
 # Google API Key: AIzaSyARODN7WldCnR2Uuiq9FZ39fCfPLxQKp7M
 
 
 library(spatial)
+library(sp)
 library(glue)
 library(scatterpie)
 library(rio)
@@ -36,7 +37,7 @@ library(RODBC)
 library(leaflet)
 library(zoo)
 library(FLTag)
-library(growthmodels)
+#library(growthmodels)
 
 # require(RPostgreSQL)
 # con <- dbConnect(RPostgreSQL::PostgreSQL(),
@@ -62,7 +63,7 @@ aottp <-  odbcConnect("aottp-local", case ="tolower",DBMSencoding='utf8')
 
 # # get AOTTP data 
 
-releases <- sqlQuery(aottp, "SELECT * from releases where chktagcanceled = '0';",as.is=T);
+releases <- sqlQuery(aottp, "SELECT * from releases WHERE chktagcanceled = '0';",as.is=T);
 # releases1 <- sqlQuery(aottp, "SELECT * from releases;",as.is=T);
 sqlQuery(aottp,"SELECT min(longitude) from releases;")
 
@@ -72,12 +73,29 @@ dim(releases)
 releases <- subset(releases, select = -notes )
 releases$len <- as.numeric(releases$len)
 
+
 ### Remove falsified tags
 
 '%notin%' <- Negate(`%in%`)
 tgs_canceled <- sqlQuery(aottp,"SELECT * FROM releases_canceled;")
 releases <- releases[releases$ctcode1 %notin% tgs_canceled$ctcode1,]
 dim(releases)
+
+### Set Helena releases ###
+
+elena <- releases[releases$team %in% c('E30','E31','E32'),]
+table(elena$rcstagecode,elena$speciescode)
+str(elena)
+elena$redate <- as.POSIXct(strptime(elena$date, format = "%Y-%m-%d"))
+elena$reyrmon <- as.yearmon(elena$redate)
+
+
+elena <- elena[elena$rcstagecode == 'R-1',]
+sth.tots <- table(elena$speciescode,elena$reyrmon)
+sth.tots <-rbind(sth.tots,apply(sth.tots,2,sum))
+sth.tots <-cbind(sth.tots,apply(sth.tots,1,sum))
+write.table(sth.tots,"T:\\AOTTP/Tenders/Phase2-Tagging/SE-Atlantic/Evaluation/Contract/St.Helena.Totals.April-30-2019.csv",sep=',')
+
 
 #releases$longitude <- as.numeric(gsub(',','.',releases$longitude))
 #releases$latitude  <- as.numeric(gsub(',','.',releases$latitude))
@@ -148,6 +166,10 @@ vessels$vesselname[vessels$vesselid == 1019] <- 'ALDEBARAN_1'
 vessels$vesselname[vessels$vesselid == 1047] <- 'TUBURAO_TIGRE'
 
 
+vessels <- vessels[vessels$vesselname %notin% c("AT000USA00050", 'XIXILI'),]
+vessels$vesselname <- gsub("\r\n\t\r\n","",vessels$vesselname)
+
+#vessels <- vessels[!is.na(vessels$vesselrelease) & vessels$vesselrelease ==1,]
 
 #znb2 <- readOGR("d://Dropbox/AOTTP/DataExploration/GISData/ZoneBV2.kml",verbose=T)
 #zna2 <- readOGR("d:/Dropbox/AOTTP/DataExploration/GISData/ZoneAV2.kml",verbose=T)
@@ -176,12 +198,20 @@ vessels$vesselname[vessels$vesselid == 1047] <- 'TUBURAO_TIGRE'
 '%notin%' <- Negate(`%in%`)
 
 ##################################################################################################
+##################################################################################################
 
-rel_rec <- sqlQuery(aottp,'SELECT * from releases_recoveries_export')
+
+
+rel_rec <- sqlQuery(aottp,'SELECT * from releases_recoveries')
 rel_rec <- subset(rel_rec, select = -rcnotes )
 dim(rel_rec)
 
-#rel_rec <- sqlQuery(aottp, "select * from releases_recoveries_all")
+# rel_rec_export <- sqlQuery(aottp, "select * from releases_recoveries_export")
+# dim(rel_rec_export)
+# rel_rec_export$zone <- rel_rec$zone[match(rel_rec_export$numtag1,rel_rec_export$strtags1)]
+# 
+# rel_rec <- rel_rec_export
+#dim(rel_rec)
 
 #tmp <- rel_rec[which(rel_rec$rcstagecode_final %in% c("R-2","R-3","R-4","R-5","RCF")),]
 
@@ -258,11 +288,12 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
 #
  rel_rec <- spatialVectors(input=rel_rec);dim(rel_rec)
 
- table(rel_rec$fmor)
- table(rel_rec$rec_fmor)
  
- table(rel_rec$yrmon,rel_rec$quad)
- tt <- table(rel_rec$rec_yrmon,rel_rec$rec_quad)
+ table(rel_rec$refmor)
+ table(rel_rec$rcfmor)
+ 
+ table(rel_rec$reyrmon,rel_rec$requad)
+ tt <- table(rel_rec$rcyrmon,rel_rec$rcquad)
  
  #table(rel_rec$tagseeding)
  
@@ -283,11 +314,17 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
  rel_rec$tagseeding <- 0
  rel_rec$electronictagcode1 <- rep(NA,length(rel_rec[,1]))
 
- rci <- which(rel_rec$rcstagecode %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
+ rci <- which(rel_rec$rcstagecode_rc %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
  
  rel_rec$recovered <- FALSE
  
  rel_rec$recovered[rci] <- TRUE
+ 
+ # St Helena releases #
+ 
+ elena <- rel_rec[rel_rec$reteam %in% c('E30','E31','E32'),]
+ tt <- table(elena$rcstagecode_rc,elena$speciescode)
+ 
  
  # Etag coding.
  
@@ -303,33 +340,44 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
  
  dim(tseed)
  
+ ####################################################
  ### Create file for charter type for each survey ###
+ ####################################################
  
- rel_rec <- orderBy(~timestamp+surveycode,data=rel_rec) # order data from first released fish
- rel_rec <- rel_rec[rel_rec$tagseeding ==0,]
- rel_rec[rel_rec$gearcode == 'PS',]
+ rel_rec <- orderBy(~retimestamp+surveycode,data=rel_rec) # order data from first released fish
+ #rel_rec <- rel_rec[rel_rec$tagseeding ==0,]
+ rel_rec[rel_rec$regearcode == 'PS',]
+ rel_rec$regearcode[rel_rec$revesselid == 863] <- 'BB'
  
- start.time<- aggregate(list(start.time=rel_rec$timestamp),by=list(vesselid=rel_rec$vesselid,gearcode=rel_rec$gearcode,surveycode=rel_rec$surveycode),min,na.rm=T)
- end.time  <- aggregate(list(end.time=rel_rec$timestamp),by=list(vesselid=rel_rec$vesselid,gearcode=rel_rec$gearcode,surveycode=rel_rec$surveycode),max,na.rm=T)
+ start.time<- aggregate(list(start.time=rel_rec$retimestamp),
+                        by=list(vesselid=rel_rec$revesselid,
+                                gearcode=rel_rec$regearcode,surveycode=rel_rec$surveycode),min,na.rm=T)
+ end.time  <- aggregate(list(end.time=rel_rec$retimestamp),
+                        by=list(vesselid=rel_rec$revesselid,
+                                gearcode=rel_rec$regearcode,surveycode=rel_rec$surveycode),max,na.rm=T)
  
  t_a <- start.time
  t_a$end.time <- end.time$end.time
+ t_a <- orderBy(~start.time,data=t_a)
+ 
  vessels$vesselname <- as.character(vessels$vesselname)
- t_a$vesselname <- vessels$vesselname[match(t_a$vesselid,vessels$vesselid)]
+ t_a$revesselname <- vessels$vesselname[match(t_a$vesselid,vessels$vesselid)]
  t_a$vesselnotes <- vessels$vesselnotes[match(t_a$vesselid,vessels$vesselid)]
  
- t_a$gearcode <- ifelse(t_a$gearcode == 'PS','BB',t_a$gearcode)
- t_a$gearcode[t_a$vesselname == 'AITA FRAXKU'] <- 'BB'
- t_a[is.na(t_a$start.time),]
+ t_a$gearcode <- ifelse(t_a$gearcode == 'PS','BB',t_a$gearcode) 
+ 
+ t_a[is.na(t_a$start.time),] # check for NAs
  t_a[is.na(t_a$end.time),]
  
- 
- t_a <- orderBy(~start.time,data=t_a)
+
  t_a$ndays <- difftime(t_a$end.time,t_a$start.time,unit='days')
+ t_a$ndays <- ifelse(t_a$ndays=='-Inf',1,t_a$ndays)
+ t_a$ndays <- ifelse(t_a$ndays <= 1,1,t_a$ndays)
+ t_a$zone <- substr(t_a$surveycode,5,5)
+ sum(t_a$ndays)
  
- fo <- (1:length(t_a[,1]))[!is.na(t_a$vesselname) & t_a$vesselname =='ARGOS']
- 
- t_a <- t_a[-fo,]
+ fo <- (1:length(t_a[,1]))[!is.na(t_a$revesselname) & t_a$revesselname =='ARGOS']
+ #t_a <- t_a[-fo,]
  
  t_a[is.na(t_a$vesselname),]
  
@@ -337,48 +385,53 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
  
  t_a$agreement <- NA
  
+
+ uv <- sort(unique(t_a$revesselname))
  
- uv <- sort(unique(t_a$vesselname))
+ t_a$agreement[t_a$revesselname == "ACORIANA"]  <- 'Charter' # Acoriana
  
- t_a$agreement[t_a$vesselname == uv[1]] <- 'Charter'
- 
- t_a$agreement[t_a$vesselname == uv[2] & t_a$end.time < as.POSIXct('2017-03-18')] <- 'Charter'
- t_a$agreement[t_a$vesselname == uv[2] & t_a$end.time > as.POSIXct('2017-03-16')] <- 'Buy_fish'
- t_a$agreement[t_a$vesselname == uv[3]] <- 'Charter'
- t_a$agreement[t_a$vesselname == uv[4]] <- 'Charter'
- t_a$agreement[t_a$vesselname == uv[5]] <- 'Charter and Buy_fish' # ALDEBARAN_!
- t_a$agreement[t_a$vesselname == uv[6]] <- 'Buy_fish(trap)' # ARAGAO
- t_a$agreement[t_a$vesselname == uv[7]] <- 'Buy_fish' # BOBALOU
- t_a$agreement[t_a$vesselname == uv[8]] <- 'Charter' # BOY
- t_a$agreement[t_a$vesselname == uv[9]] <- 'Charter' # Canyon Runner
- t_a$agreement[t_a$vesselname == uv[10]] <- 'Buy_fish' # Eagle Eye 2
- t_a$agreement[t_a$vesselname == uv[11]] <- 'Charter' # El Classico
- 
- t_a$agreement[t_a$vesselname == uv[12] & t_a$end.time < as.POSIXct('2016-11-07')] <- 'Charter' # Primero
- t_a$agreement[t_a$vesselname == uv[12] & t_a$end.time >= as.POSIXct('2016-11-06')] <- 'Buy_fish' # Primero
- t_a$agreement[t_a$vesselname == uv[13]] <- 'Charter' # El Macizo
- t_a$agreement[t_a$vesselname == uv[14]] <- 'Charter and Buy_fish' # Estrella Dalva
- t_a$agreement[t_a$vesselname == uv[15]] <- 'Charter' # Amalia
- t_a$agreement[t_a$vesselname == uv[16]] <- 'Charter' # Catfish
- t_a$agreement[t_a$vesselname == uv[17]] <- 'Charter' # Extractor
- t_a$agreement[t_a$vesselname == uv[18]] <- 'Charter' # Helena Dorothy
- t_a$agreement[t_a$vesselname == uv[19]] <- 'Charter' # John Melliss
- t_a$agreement[t_a$vesselname == uv[20]] <- 'Charter' # Seahorse
- t_a$agreement[t_a$vesselname == uv[21]] <- 'Buy_fish' # KM 8
- t_a$agreement[t_a$vesselname == uv[22]] <- 'Charter' # Levana
- t_a$agreement[t_a$vesselname == uv[23]] <- 'Buy_fish' # Nuevo Batabanao I
- t_a$agreement[t_a$vesselname == uv[24]] <- 'Buy_fish' # Ouled si Mohand
- t_a$agreement[t_a$vesselname == uv[25]] <- 'Charter' # Ponta Calhau
- t_a$agreement[t_a$vesselname == uv[26]] <- 'Charter and Buy_fish' # Sinuelo
- t_a$agreement[t_a$vesselname == uv[27]] <- 'Charter' # Tarrynamy
- t_a$agreement[t_a$vesselname == uv[28]] <- 'Charter and Buy_fish' # Thavisson III
- t_a$agreement[t_a$vesselname == uv[29]] <- 'Charter' # Transmar I
- t_a$agreement[t_a$vesselname == uv[30]] <- 'Charter' # Tuburao tigre
- t_a$agreement[t_a$vesselname == uv[31]] <- 'Charter' # Txilamon ni son
+ t_a$agreement[t_a$revesselname == "AITA FRAXKU" & t_a$end.time < as.POSIXct('2017-03-18')] <- 'Charter'
+ t_a$agreement[t_a$revesselname == "AITA FRAXKU" & t_a$end.time > as.POSIXct('2017-03-16')] <- 'Buy_fish'
+ t_a$agreement[t_a$revesselname == "ALBACORE"] <- 'Charter'
+ t_a$agreement[t_a$revesselname == "ALDEBARAN_1"] <- 'Charter'
+ t_a$agreement[t_a$revesselname == "ARAGAO"] <- 'Buy_fish(trap)' # 
+ t_a$agreement[t_a$revesselname == "BOY"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "CANYON RUNNER"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "EL CLASSICO"] <- 'Charter' #
+t_a$agreement[t_a$revesselname == "EL GRANDE PRIMERO" & t_a$end.time < as.POSIXct('2016-11-07')] <- 'Charter' # Primero
+t_a$agreement[t_a$revesselname == "EL GRANDE PRIMERO" & t_a$end.time >= as.POSIXct('2016-11-06')] <- 'Buy_fish' # Primero              
+               
+ t_a$agreement[t_a$revesselname == "EL MACIZO"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "ESTRELLA DALVA"] <- 'Charter and Buy_fish' #
  
  
+ t_a$agreement[t_a$revesselname == "EXILE"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV AMALIA"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV CATFISH"] <- 'Charter' # 
+ t_a$agreement[t_a$revesselname == "FV EXTRACTOR"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV HELENA DOROTHY"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV JOHN MELLIS"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV Ocean Wave"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "FV SEAHORSE"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "KATSUSHIO MARU 8"] <- 'Buy_fish' #
+ t_a$agreement[t_a$revesselname == "KERRY-D"] <- 'Charter' # 
+ t_a$agreement[t_a$revesselname == "LEVANA"] <- 'Charter' # 
+ t_a$agreement[t_a$revesselname == "N.D.N.S."] <- 'Buy_fish' # 
+ t_a$agreement[t_a$revesselname == "NUEVO BATABANO I"] <- 'Buy_fish' # 
+ t_a$agreement[t_a$revesselname == "OULED SI MOHAND\r\n\t\r\n"] <- 'Charter and Buy_fish' # 
+ t_a$agreement[t_a$revesselname == "PONTA CALHAU"] <- 'Charter' # 
+ t_a$agreement[t_a$revesselname == "SINUELO"] <- 'Charter and Buy_fish' #
+ t_a$agreement[t_a$revesselname == "SLACK'D UP"] <- 'Charter' # Transmar I
+ t_a$agreement[t_a$revesselname == "TARRYNAMY"] <- 'Charter' #
+ t_a$agreement[t_a$revesselname == "THAVISSON III"] <- 'Charter and Buy_fish' # T
+ t_a$agreement[t_a$revesselname == "TRAMSMAR I"] <- 'Charter and Buy_fish' # T
+ t_a$agreement[t_a$revesselname == "TUBURAO_TIGRE"] <- 'Charter and Buy_fish' # T
+ t_a$agreement[t_a$revesselname == "TXILAMON NI SON"] <- 'Charter' # T
  
- write.table(t_a,file='c:/Users/dbeare/tagging.agreements.csv',sep=",",row.names=F)
+ sum(t_a$ndays)
+ 
+ write.table(t_a,file='c:/Users/dbeare/tagging.agreements.17_May_2019.csv',sep=",",row.names=F)
+ write.table(t_a,file='T:/AOTTP/Database/data/tagging.agreements.17_May_2019.csv',sep=",",row.names=F)
  
  
  ###################################################################################
@@ -608,7 +661,7 @@ K0
  
  
 input <- rel_rec 
-mapPoints(input = input,what.longitude = "longitude",what.latitude="latitude", what.species = c("BET"),what.size=2)
+mapPoints(input = input,what.longitude = "relonx",what.latitude="relaty",what.size=2)
 
 mapPoints(input = input[input$vesselid != 1017,],what.longitude = "longitude",what.latitude="latitude", what.species = c("BET","LTA","SKJ","YFT"),what.size=2)
 
@@ -698,9 +751,11 @@ tapply(input$days_at_liberty,input$speciescode,summary,na.rm=T)
 #
 #
 # #tracks
-input <-rel_rec[rel_rec$tagseeding==0 & is.na(rel_rec$electronictagcode1),]
- mapTrack(input = input[input$nautical_m >= 500,], what.species='BET',what.size=1)
- mapTrack(input = input[input$nautical_m >= 500,], what.species='YFT',what.size=1)
+input <-rel_rec
+ mapTrack(input = input,what.distance=750, what.species='BET',what.size=1,lon.limits=c(-50,30),lat.limits=c(-50,50))
+
+ 
+  mapTrack(input = input[input$nautical_m >= 750,], what.species='YFT',what.size=1)
  mapTrack(input = input[input$nautical_m >= 500,], what.species='SKJ',what.size=1)
  
  mapTrack(input = input[input$nautical_m >= 5,], what.species='LTA',what.size=.1)
@@ -758,9 +813,15 @@ apply(ChemTaggingTab(),1,sum)
 #
 # #releases and recoveries in time
 #
- relRecTimeSeries(input=rel_rec[rel_rec$tagseeding==0,])
- relRecTimeSeries(what.species=c('BET',"YFT","SKJ","LTA"))
- relRecTimeSeries(what.species=c("BET"))
+
+relRecTimeSeries(rel_rec,what.species=c('BET','YFT'))
+ 
+ rel_rec$redate[rel_rec$redate == '2019-06-04'] <- '2019-05-04'
+ 
+ relRecTimeSeries(rel_rec,what.species=c('YFT'))
+ relRecTimeSeries(rel_rec[rel_rec$redate > '2019-01-01',],what.species=c("YFT"))
+ 
+ 
  relRecTimeSeries(input=data(iotc))
  
  
@@ -1442,3 +1503,37 @@ skyconditions<- sqlQuery(aottp, "SELECT * from skyconditions ")
 write.table(skyconditions,file='/home/dbeare/skyconditions.csv',sep=',')
 
 
+
+
+### Read in spatial objects from postgis to R
+
+library(RPostgreSQL)
+library(postGIStools)
+
+con <- dbConnect(PostgreSQL(), dbname = "aottp", user = "aottpw",
+                 host = "172.16.1.48",
+                 password = "tunasw")
+yfta<- get_postgis_query(con, "GRANT ALL ON SELECT * FROM  gis.yftfa",
+                               geom_name = "geom")
+
+plot(yfta)
+
+
+#with RODBC
+aottp <-  odbcConnect("aottp-local", case ="tolower",DBMSencoding='utf8')
+
+
+query <- "SELECT * FROM  gis.yftfa"
+yftfa <- sqlQuery(aottp, query)
+coordinates(chisoaks) <- ~x + y
+plot(chis)
+points(chisoaks, pch = 21, bg = 2, cex = 0.4)
+box()
+axis(1)
+axis(2)
+grid()
+
+
+query <- "PG:dbname='aottp' host='172.16.1.48' port='5432' user='tunasw' password='aottpw'"
+
+ogrListLayers(dsn)

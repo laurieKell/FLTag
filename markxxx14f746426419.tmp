@@ -1,0 +1,10 @@
+ proc title ; proc chmatrix occasions= 2 groups= 1 etype= Brownie ICMeans NoHist hist= 5 ; time
+ interval 1 1 ;
+glabel(1)=Group 1;
+ 0010 5032;
+ 0011 1390;
+ 1000 6795;
+ 1001 626;
+ 1100 1616;
+proc estimate link=Logit NOLOOP varest=2ndPart    ;
+model={ S(~time)f(~time) };

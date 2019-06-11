@@ -103,9 +103,9 @@
 # 
 # #2. Read in EEZs 
 # 
-# eez <- readOGR("/media/aottp/AOTTP/DataExploration/GISData","World_EEZ_v8_2014_HR")
+ eez <- readOGR("/media/aottp/AOTTP/DataExploration/GISData","World_EEZ_v8_2014_HR")
 # 
-# proj4string(eez) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+ proj4string(eez) <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 # 
 # library(rgeos)
 # 
@@ -114,6 +114,7 @@
 # #3. Write out data for FLTag library
 # 
 # save (eez.small,file='/home/dbeare/FLTag/data/eezsmall.RData',compress="xz")
+save (eez,file='/home/dbeare/FLTag/data/eez.RData',compress="xz")
 # save (lme,file='/home/dbeare/FLTag/data/lme.RData',compress="xz")
 # 
 # #4. FAD moratorium area 2016
@@ -146,8 +147,10 @@
 # writeOGR(Sldf,"/home/dbeare/fadmoratorium",layer="fadmoratorium" , driver="ESRI Shapefile")
 # 
 # fadmoratorium <- readOGR("/home/dbeare/fadmoratorium",layer="fadmoratorium")
+
+# fadmoratorium <- readOGR("/media/aottp/AOTTP/Database/QGIS/datosgis/fadmoratorium",layer="fadmoratorium_pol")
 # 
-# save(fadmoratorium,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
+#  save(fadmoratorium,file='/home/dbeare/FLTag/data/fadmoratorium.RData',compress="xz")
 # 
 # #5. Shapefile of seas/oceans
 # 
