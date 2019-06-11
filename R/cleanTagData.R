@@ -5,9 +5,9 @@ cleanTagData <- function(input=rel_rec)
   
   #input <- rel_rec
   
-  input$tsplacename <- gsub('MarchÃ© Central Au Poisson','Central Fish Market',input$tsplacename)
-  input$tsplacename <- gsub('MarchÃ© Central AU Poisson','Central Fish Market',input$tsplacename)
-  input$tsplacename <- gsub('Marche Au Poisson','Central Fish Market',input$tsplacename)
+  # input$tsplacename <- gsub('MarchÃ© Central Au Poisson','Central Fish Market',input$tsplacename)
+  # input$tsplacename <- gsub('MarchÃ© Central AU Poisson','Central Fish Market',input$tsplacename)
+   input$tsplacename <- gsub('Marche Au Poisson','Central Fish Market',input$tsplacename)
   input$tsplacename <- gsub('Marche Centre Au Poisson','Central Fish Market',input$tsplacename)
   
   

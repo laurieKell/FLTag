@@ -4,12 +4,12 @@ spatialVectors <- function(input=rel_rec)
 #input<- iotc[1:10000,]
 data("eez") # add on names of EEZs
 data("seas")
-data("lme") # large marine ecosystems
+#data("lme") # large marine ecosystems
 data("fadmoratorium")
 
 # make sure projections are all the same
 
-proj4string(lme) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+#proj4string(lme) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 proj4string(eez) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 proj4string(fadmoratorium) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
 proj4string(seas) <- "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
@@ -49,7 +49,7 @@ input1 <- input
   input1$reeez[input1$eez == "Disputed Western Sahara/Mauritania"]      <- "Mauritanian Exclusive Economic Zone"
   input1$reeez <- gsub('Exclusive Economic Zone','EEZ',input1$reeez)
   # Add on LME
-  input1$relme <- as.character(over(input_xy, lme)$LME_NAME)
+  #input1$relme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
   input1$reocean <- as.character(over(input_xy, seas)$NAME)
   
@@ -62,7 +62,7 @@ input1 <- input
   if(length(xx.yy) > 0)
     {
   input_na$reeez <- NA
-  input_na$relme <- NA
+  #input_na$relme <- NA
   input_na$reocean <- NA
   input_na$refmor  <-NA
   input <- rbind(input1,input_na)
@@ -107,7 +107,7 @@ input1 <- input
   input1$rceez <- gsub('Exclusive Economic Zone','EEZ',input1$rceez)
   
   # Add on LME
-  input1$rclme <- as.character(over(input_xy, lme)$LME_NAME)
+  #input1$rclme <- as.character(over(input_xy, lme)$LME_NAME)
   # Add on Ocean or Sea
   input1$rcocean <- as.character(over(input_xy, seas)$NAME)
   
@@ -117,7 +117,7 @@ input1 <- input
   
   
   input_na$rceez <- NA
-  input_na$rclme <- NA
+  #input_na$rclme <- NA
   input_na$rcocean <- NA
   input_na$rcfmor <- NA
   

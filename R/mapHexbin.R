@@ -1,11 +1,14 @@
-mapHexbin <- function(input = rel_rec,what.species = 'SKJ',what.longitude='longitude',what.latitude='latitude',nbins=100)
+mapHexbin <- function(input = rel_rec,what.species = 'SKJ',
+                      what.longitude='longitude',
+                      what.latitude='latitude',nbins=100)
   {
-   #input = rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c("YFT","BET");nbins=100
+   # input = rel_rec; what.longitude = "rclonx"; what.latitude="rclaty"; 
+   # what.species = c("YFT","BET","SKJ");nbins=120
   world <- map_data('world');
   my_breaks <- round(exp(seq(log(1), log(800), length = 5)))
     ggplot(data=input[input$speciescode %in% what.species,],aes_string(x=what.longitude,y=what.latitude))+
-      coord_fixed(1.3,xlim=c(-80,25),ylim=c(-40,40))+
-      facet_wrap(~speciescode,ncol=2)+
+      coord_fixed(1.3,xlim=c(-80,30),ylim=c(-50,50))+
+      #facet_wrap(~speciescode,ncol=2)+
       #geom_point(aes(x=longitude,y=latitude),data=input[input$speciescode %in% what.species,],size=1,color='green')+
       geom_hex(bins = nbins )+ 
       scale_fill_gradientn(colours=heat.colors(10),trans='log',labels=my_breaks,breaks=my_breaks)+

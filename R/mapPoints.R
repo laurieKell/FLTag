@@ -1,16 +1,17 @@
-mapPoints <- function (input = rel_rec,what.species = 'SKJ',what.longitude='longitude',what.latitude='latitude',
+mapPoints <- function (input = rel_rec,what.species = c('BET','SKJ','YFT'),what.longitude='relonx',what.latitude='relaty',
                        lon.limits=c(-80,30),lat.limits=c(-50,50),what.size=1)
   
 {
-  #input = rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c("BET","YFT");
-  
+  # input = rel_rec; what.longitude = "relonx"; what.latitude="relaty"; what.species = c("BET","YFT","SKJ");
+  # lon.limits<-c(-80,30);what.size <- 2
+  # lat.limits<-c(-50,50)
   input <- fortify(input)
   #wAfMap <- get_map(location=location,source='osm',maptype='satellite',crop=TRUE,zoom=zz)
   world <- map_data('world');
   
   ggplot(data=input[input$speciescode %in% what.species,],aes_string(x=what.longitude,y=what.latitude))+
     coord_fixed(1.3,xlim=lon.limits,ylim=lat.limits)+
-    facet_wrap(~speciescode,ncol=2)+
+    #facet_wrap(~speciescode,ncol=2)+
     
     geom_point(data=input[input$speciescode %in% what.species,],aes_string(x=what.longitude,y=what.latitude,color="speciescode"),
                alpha=1,size=what.size) +
@@ -25,7 +26,6 @@ mapPoints <- function (input = rel_rec,what.species = 'SKJ',what.longitude='long
     
     #geom_polygon(data=eez,aes(x=long,y=lat,group=group),color='lightblue',fill=NA,size=0.1) +
     
-    facet_wrap(~ speciescode, ncol=2)+
     theme(plot.margin=unit(c(.1,.1,.1,.1),"cm"),
           axis.text.x =element_text(colour="grey20",size=12,face="plain"),
           axis.text.y=element_text(colour="grey20",size=12,face="plain"),

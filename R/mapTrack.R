@@ -1,13 +1,18 @@
 mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB','GILL','UNKN','LL','SPOR'),
                      what.size=1,lon.limits=c(-80,30),lat.limits=c(-50,50),what.distance = 500)
 {
-  #input = rel_rec; what.species = c("YFT");  
-  # what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');what.size<-1
+  # input = rel_rec; what.species = c("BET");  
+  # what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');what.size<-1;
+  # what.distance <- 500;lon.limits=c(-80,30);lat.limits=c(-50,50)
   
     input <- input[input$speciescode %in% what.species,]
     input <- input[input$regearcode %in% what.gear,]
+    input <- input[!is.na(input$relonx),]
+    input <- input[!is.na(input$relaty),]
+    input <- input[input$distance_nm >= what.distance,]
+    input <- input[!is.na(input$distance_nm),]
     #input$quarter <- quarter(input$redate)
-    input$remonth = factor(input$remonth, levels = month.name)
+    #input$remonth = factor(input$remonth, levels = month.name)
   input <- fortify(input)
   #wAfMap <- get_map(location=location,source='google',maptype='satellite',crop=TRUE,zoom=zz)
   #ggmap(wAfMap) +
@@ -16,15 +21,15 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB
     geom_polygon(data=world,aes(x=long,y=lat,group=group),col='black',fill='darkgreen')+
   
     coord_fixed(1,xlim=lon.limits,ylim=lat.limits)  +
-   geom_segment(data=input[input$distance_nm >= what.distance,],
+   geom_segment(data=input,
                  aes(x=relonx,y=relaty,xend=rclonx,yend=rclaty,group=specimenid,color=relen),
               arrow = arrow(length = unit(0.2,"cm")),size=what.size,alpha=1) +
       geom_point(data=input,
                  aes(x=relonx,y=relaty),
                  alpha=1,size=.5,color=5) +
-      facet_wrap(~ remonth, ncol=4) +
-      scale_color_gradient(low="red", high="yellow") +
+      #facet_wrap(~ remonth, ncol=4) +
       #facet_wrap( ~ requarter, ncol=2) +
+      scale_color_gradient(low="red", high="yellow") +
     theme(plot.margin=unit(c(1,1,1,1),"cm"),
           axis.text.x =element_text(colour="grey20",size=12,face="plain"),
           axis.text.y=element_text(colour="grey20",size=12,face="plain"),
