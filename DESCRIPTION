@@ -39,6 +39,7 @@ Collate:
 	mapPointsSpeciesByMonth.R
 	growthTrack.R
 	convertPointToLine.R
+        cruises.R
 VignetteBuilder: 
     knitr
 Suggests:

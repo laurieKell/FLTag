@@ -25,7 +25,8 @@ export("summary",
 	"nElectronicTagsTab",
 	"mapPointsSpeciesByMonth",
 	"growthTrack",
-	"convertPointToLine")
+	"convertPointToLine",
+         "cruises")
 exportClasses("FLTag")
 exportMethods("FLTag",
               "I",
