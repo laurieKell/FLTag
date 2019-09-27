@@ -1,12 +1,14 @@
+
 mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB','GILL','UNKN','LL','SPOR'),
-                     what.size=1,lon.limits=c(-80,30),lat.limits=c(-50,50),what.distance = 500)
+                     what.size=1,lon.limits=c(-80,50),lat.limits=c(-50,50),what.distance = 3)
 {
-  # input = rel_rec; what.species = c("BET");  
-  # what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');what.size<-1;
-  # what.distance <- 500;lon.limits=c(-80,30);lat.limits=c(-50,50)
-  
+  # input <-  elec[!is.na(elec$days_at_liberty) & elec$days_at_liberty > 365 & elec$supplier == 'LOTEK LAT2810',]
+   #what.species = c("BET","YFT");  
+ #what.gear = c('PS','BB','GILL','UNKN','LL','SPOR');what.size<-1;
+  # what.distance <- 3;lon.limits=c(-80,50);lat.limits=c(-50,50)
+   # input <- ltk
     input <- input[input$speciescode %in% what.species,]
-    input <- input[input$regearcode %in% what.gear,]
+    input <- input[input$rcgearcode %in% what.gear,]
     input <- input[!is.na(input$relonx),]
     input <- input[!is.na(input$relaty),]
     input <- input[input$distance_nm >= what.distance,]
@@ -22,18 +24,19 @@ mapTrack <- function(input = rel_rec,what.species = 'SKJ',what.gear = c('PS','BB
   
     coord_fixed(1,xlim=lon.limits,ylim=lat.limits)  +
    geom_segment(data=input,
-                 aes(x=relonx,y=relaty,xend=rclonx,yend=rclaty,group=specimenid,color=relen),
-              arrow = arrow(length = unit(0.2,"cm")),size=what.size,alpha=1) +
+                 aes(x=relonx,y=relaty,xend=rclonx,yend=rclaty,group=specimenid,
+                   color=speciescode),
+              arrow = arrow(length = unit(0.1,"cm")),size=what.size,alpha=1) +
       geom_point(data=input,
                  aes(x=relonx,y=relaty),
                  alpha=1,size=.5,color=5) +
-      #facet_wrap(~ remonth, ncol=4) +
+      #facet_wrap(~ reyrmon, ncol=4) +
       #facet_wrap( ~ requarter, ncol=2) +
-      scale_color_gradient(low="red", high="yellow") +
+      #scale_color_gradient(low="red", high="yellow") +
     theme(plot.margin=unit(c(1,1,1,1),"cm"),
-          axis.text.x =element_text(colour="grey20",size=12,face="plain"),
-          axis.text.y=element_text(colour="grey20",size=12,face="plain"),
-          axis.title.y=element_text(size=15))+
+          axis.text.x =element_text(colour="grey20",size=10,face="plain"),
+          axis.text.y=element_text(colour="grey20",size=10,face="plain"),
+          axis.title.y=element_text(size=12))+
     xlab("")+ylab("")
 }
 
