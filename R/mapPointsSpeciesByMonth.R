@@ -1,10 +1,10 @@
-mapPointsSpeciesByMonth <- function (input = rel_rec,what.species = 'SKJ',what.longitude='longitude',what.latitude='latitude',
-                                     what.facet='yrmon',ncol=4,what.size=.2)
+mapPointsSpeciesByMonth <- function (input = rel_rec,what.species = 'SKJ',what.longitude='relonx',what.latitude='relaty',
+                                     what.facet='reyrmon',ncol=4,lon.limits=c(-80,30),lat.limits=c(-50,50),what.size=.2)
   
 {
  
   #input = rel_rec; what.longitude = "rec_longitude"; what.latitude="rec_latitude"; what.species = c('BET','SKJ','YFT');ncol=4
-  #input = rel_rec; what.longitude = "longitude"; what.latitude="latitude"; what.species = c('BET','LTA','SKJ','YFT');ncol=4;
+  #input = tt17; what.longitude = "longitude"; what.latitude="latitude"; what.species = c('BET','LTA','SKJ','YFT');ncol=4;
   #what.facet='yrmon'
   
   #input <- input[input$tagseeding == 0,] # Don't plot tag seeding
@@ -13,8 +13,9 @@ mapPointsSpeciesByMonth <- function (input = rel_rec,what.species = 'SKJ',what.l
   input <- fortify(input[input$speciescode %in% what.species,])
   #wAfMap <- get_map(location=Atl,source='google',maptype='satellite',crop=TRUE,zoom=3)
   world <- map_data('world');
-  ggplot(data=input[input$speciescode %in% what.species,],aes_string(x=what.longitude,y=what.latitude))+
-    coord_fixed(1.3,xlim=c(-80,25),ylim=c(-40,40)) +
+  ggplot(data=input[input$speciescode %in% what.species,],
+    aes_string(x=what.longitude,y=what.latitude))+
+    coord_fixed(1.3,xlim=lon.limits,ylim=lat.limits) +
     geom_point(data=input,aes_string(x=what.longitude,y=what.latitude,
                                      color="speciescode"),alpha=1,size=what.size)+
     geom_polygon(data=world,aes(x=long,y=lat,group=group),col='darkgreen',fill='darkgreen')+
