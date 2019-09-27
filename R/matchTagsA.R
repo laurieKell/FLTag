@@ -4,17 +4,17 @@ matchTagsA <- function(rels=releases,recs=recoveries,mtch = 'specimenid')
    #rels <- releases; recs<- recoveries;mtch <- 'specimenid'
   # Matches releases and recoveries producing output in a 'short-format', e.g. columns have rec_longitude and rel_longitude
   mm <- match(rels[,mtch],recs[,mtch]) # add on some observations from release file.
-  rels$rec_ctcode1 <- recs$ctcode1[mm]
-  rels$rec_ctcode2 <- recs$ctcode2[mm]
-  rels$rec_ctcolor1 <- recs$ctcolor1[mm]
-  rels$rec_ctcolor2 <- recs$ctcolor2[mm]
-  rels$rec_longitude <- recs$longitude[mm]
-  rels$rec_latitude <- recs$latitude[mm]
-  rels$rec_len  <- recs$len[mm]
-  rels$rec_gearcode <- recs$gearcode[mm]
-  rels$rec_date <- recs$date[mm]
-  rels$rec_time <- recs$time[mm]
-  rels$rec_team <- recs$team[mm]
+  rels$rcnumtag1 <- recs$numtag1[mm]
+  rels$rcnumtag2 <- recs$numtag2[mm]
+  rels$rec_ctcolor1 <- recs$tagcolor1[mm]
+  rels$rec_ctcolor2 <- recs$tagcolor2[mm]
+  rels$rclonx <- recs$relonx[mm]
+  rels$rclaty <- recs$relaty[mm]
+  rels$rclen  <- recs$relen[mm]
+  rels$rcgearcode <- recs$regearcode[mm]
+  rels$rcdate <- recs$redate[mm]
+  rels$rctime <- recs$retime[mm]
+  rels$rcteam <- recs$reteam[mm]
   rels$recovered <-ifelse(is.na(mm),F,T)
   
   rels  
