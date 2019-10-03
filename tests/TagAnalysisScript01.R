@@ -73,6 +73,12 @@ dim(releases)
 releases <- subset(releases, select = -notes )
 releases$len <- as.numeric(releases$len)
 
+###  Tag series etc ###
+
+tagseries <- sqlQuery(aottp, 'SELECT * from tagseries;')
+red<- tagseries[tagseries$tagcolorid == 2,]
+sum(red$tagnums)
+yellow <- tagseries[tagseries$tagcolorid == 3,]
 
 ### Remove falsified tags
 
@@ -83,7 +89,7 @@ dim(releases)
 
 ### Set Helena releases ###
 
-elena <- releases[releases$team %in% c('E30','E31','E32'),]
+elena <- releases[releases$team %in% c('E30','E31','E32') & releases$rcstagecode == 'R-1',]
 table(elena$rcstagecode,elena$speciescode)
 str(elena)
 elena$redate <- as.POSIXct(strptime(elena$date, format = "%Y-%m-%d"))
@@ -114,36 +120,51 @@ dim(recoveries)
 #recoveries$longitude <- as.numeric(gsub(',','.',recoveries$longitude))
 #
 
-# # get the historical ICCAT data
-# hreleases <- sqlQuery(aottp, "SELECT * from re_iccat_all;");dim(hreleases)
-# colnames(hreleases)[colnames(hreleases)=='date_'] <- 'date'
-# colnames(hreleases)[colnames(hreleases)=='time_'] <- 'time'
-# hreleases$project <- 'iccat'
+# ## get the historical ICCAT data
+#  hreleases <- sqlQuery(aottp, "SELECT * from public.re_iccat_all;");dim(hreleases)
+#  
+#  colnames(hreleases)[colnames(hreleases)=='ctcode1'] <- 'numtag1'
+#  colnames(hreleases)[colnames(hreleases)=='ctcode2'] <- 'numtag2'
+#  colnames(hreleases)[colnames(hreleases)=='date_'] <- 'redate'
+#  colnames(hreleases)[colnames(hreleases)=='time_'] <- 'retime'
+#  colnames(hreleases)[colnames(hreleases)=='len'] <- 'relen'
+#  colnames(hreleases)[colnames(hreleases)=='ctcolor1'] <- 'tagcolor1'
+#  colnames(hreleases)[colnames(hreleases)=='ctcolor2'] <- 'tagcolor2'
+#  
+#   hreleases$project <- 'iccat'
+# # 
+#  hrecoveries <- sqlQuery(aottp, "SELECT * from public.rc_iccat_all;"); dim(hrecoveries);
+#  colnames(hrecoveries)[colnames(hrecoveries)=='ctcode1'] <- 'numtag1'
+#  colnames(hrecoveries)[colnames(hrecoveries)=='ctcode2'] <- 'numtag2'
+#  colnames(hrecoveries)[colnames(hrecoveries)=='date_'] <- 'rcdate'
+#  colnames(hrecoveries)[colnames(hrecoveries)=='time_'] <- 'rctime'
+# colnames(hrecoveries)[colnames(hrecoveries)=='len'] <- 'rclen'
+# colnames(hrecoveries)[colnames(hrecoveries)=='ctcolor1'] <- 'tagcolor1'
+# colnames(hrecoveries)[colnames(hrecoveries)=='ctcolor2'] <- 'tagcolor2'
 # 
-# hrecoveries <- sqlQuery(aottp, "SELECT * from rc_iccat_all;"); dim(hrecoveries);
-# colnames(hrecoveries)[colnames(hrecoveries)=='date_'] <- 'date'
-# colnames(hrecoveries)[colnames(hrecoveries)=='time_'] <- 'time'
 # hrecoveries$project <- 'iccat'
 # 
 # releases <- merge(releases,hreleases,all=T);dim(releases)
 # recoveries <- merge(recoveries,hrecoveries,all=T);dim(recoveries)
 
+# hrel_rec <- matchTagsA(rels=hreleases,recs=hrecoveries,mtch='ctcode1');dim(hrel_rec)
+#str(rel_rec)
+
+
 
 # Electronic tags
 
-etags <- sqlQuery(aottp, "SELECT * from releases_electronic;"); dim(etags);
-nams <- dimnames(etags)[[2]]
-orderBy(~ctag+etag+redate,data=etags)
-etags <- subset(etags,select = -notes)
-write.table(etags[etags$supplier == 'DS',],file='c://users/dbeare/Documents/DesertStarDeployments.csv',sep='|',row.names=F)
-write.table(etags,file='c://users/dbeare/Documents/ElectronicTagDeployments.csv',sep='|') 
-etags <-    read.table('c://users/dbeare/Documents/ElectronicTagDeployments.csv',sep='|')
+elec <- sqlQuery(aottp, "SELECT * from releases_recoveries_electronic;"); dim(etags);
+nams <- dimnames(elec)[[2]]
 
+i <- sapply(elec, is.factor)
+elec[i] <- lapply(elec[i], as.character)
+elec <-timeVectors(input=elec,orig.date="2016-01-01");
 
-length(unique(etags$specimenid[etags$supplier == 'WC']))
-length(unique(etags$specimenid[etags$supplier == 'DS']))
-length(unique(etags$specimenid[etags$supplier == 'LOTEK LAT2810']))
-length(unique(etags$specimenid[etags$supplier == 'LOTEK ARCGEO9']))
+elec <- spatialVectors(input=elec);
+elec$reeez[is.na(elec$reeez)] <- 'High Seas'
+
+elec[!is.na(elec$ndays) & elec$ndays > 399 & elec$supplier == 'LOTEK ARCGEO9',]
 
 
 str(recoveries$latitude)
@@ -159,6 +180,8 @@ countries <- sqlQuery(aottp, "SELECT * from countries;")
 tagseries <- sqlQuery(aottp, "SELECT * from tagseries;")
 electronictags <- sqlQuery(aottp,"SELECT * from electronictags;")
 fadmoratorium <- readOGR("d://dbeare/dbeare/fadmoratorium",layer="fadmoratorium",verbose=FALSE)
+
+'%notin%' <- Negate(`%in%`)
 
 vessels <- sqlQuery(aottp,"SELECT * from vessels;",as.is=T)
 vessels$vesselname[vessels$vesselid == 862] <- 'ACORIANA'
@@ -195,57 +218,53 @@ vessels$vesselname <- gsub("\r\n\t\r\n","",vessels$vesselname)
 #rel_rec <- matchTagsA(rels=releases,recs=recoveries,mtch='ctcode1');dim(rel_rec)
 #str(rel_rec)
 
-'%notin%' <- Negate(`%in%`)
 
 ##################################################################################################
 ##################################################################################################
+### Use Jesus' View ###
+##############################################################
 
+odbcCloseAll()
+#
+aottp <-  odbcConnect("aottp-local", case ="tolower",DBMSencoding='utf8')
+#aottp <-  odbcConnect("bigeye-aottp", case ="postgresql", believeNRows=FALSE)
 
+rel_rec <- sqlQuery(aottp,'SELECT * from releases_recoveries_withhistoricaldataiccat')
 
-rel_rec <- sqlQuery(aottp,'SELECT * from releases_recoveries')
 rel_rec <- subset(rel_rec, select = -rcnotes )
-dim(rel_rec)
+i <- sapply(rel_rec, is.factor)
+rel_rec[i] <- lapply(rel_rec[i], as.character)
 
-# rel_rec_export <- sqlQuery(aottp, "select * from releases_recoveries_export")
-# dim(rel_rec_export)
-# rel_rec_export$zone <- rel_rec$zone[match(rel_rec_export$numtag1,rel_rec_export$strtags1)]
-# 
-# rel_rec <- rel_rec_export
-#dim(rel_rec)
+summary(rel_rec$rcdate,na.rm=T)
 
-#tmp <- rel_rec[which(rel_rec$rcstagecode_final %in% c("R-2","R-3","R-4","R-5","RCF")),]
+table(rel_rec$tagseries)
+#ATP = 114834
 
-#table(tmp$speciescode)
-
-
-# colnames(nrel_rec)[colnames(nrel_rec) == 'numtag1'] <- 'ctcode1'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'numtag2'] <- 'ctcode2'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'tagcolor1'] <- 'ctcolor1'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'tagcolor2'] <- 'ctcolor2'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'relonx'] <- 'longitude'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'relaty'] <- 'latitude'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'redate'] <- 'date'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'regearcode'] <- 'gearcode'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'relen'] <- 'len'
-# 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rcgearcode'] <- 'rec_gearcode'
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rcdate'] <- 'rec_date' 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rclen'] <- 'rec_len' 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rclonx'] <- 'rec_longitude' 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rclaty'] <- 'rec_latitude' 
-# 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rcnumtag1'] <- 'rec_ctcode1' 
-# colnames(nrel_rec)[colnames(nrel_rec) == 'rcnumtag2'] <- 'rec_ctcode2' 
+colnames(rel_rec)[colnames(rel_rec) == 'strtags1'] <- 'numtag1'
+colnames(rel_rec)[colnames(rel_rec) == 'strtags2'] <- 'numtag2'
+dim(rel_rec)  # 681939
 
 
 
-# harmonise character strings
+# Check the lats and longs
 
- #rel_rec <- cleanTagData(input = nrel_rec);dim(rel_rec) # Don't need this here as it is for tag seeding.
+hist(rel_rec$relonx)
+hist(rel_rec$rclonx);summary(rel_rec$rclonx)
+hist(rel_rec$relaty)
+hist(rel_rec$rclaty);summary(rel_rec$rclaty)
+
+ko2<- which(rel_rec$rclonx >= 180)
+ko3<- which(rel_rec$rclaty >= 180)
+rel_rec<-rel_rec[-c(ko2,ko3),]
+
+plot(rel_rec$relonx,rel_rec$relaty,pch=".")
+points(rel_rec$rclonx,rel_rec$rclaty,pch='.',col='red')
+map('world',add=T,col='green',fill=T)
+#rel_rec <- cleanTagData(input = nrel_rec);dim(rel_rec) # Don't need this here as it is for tag seeding.
 
  # Change factors to characters and generate R-format timestamps
 
- rel_rec <- formatTagdata(input=rel_rec);dim(rel_rec)
+ rel_rec_all <- formatTagdata(input=rel_rec);dim(rel_rec_all)
  
  # Make sure there is no Brazilian faked tags in the data
  
@@ -261,39 +280,38 @@ dim(rel_rec)
  
 # Convert weights to lengths
 #
- rel_rec$kg <- NA
+ rel_rec_all$rekg <- NA
 #
- rel_rec$kg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'BET'] <- lenW_BET(lf=rel_rec$relen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'BET'])
- rel_rec$kg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec$relen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'])
- rel_rec$kg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec$relen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'YFT'])
- rel_rec$kg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$relen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'LTA'])/1000
+ rel_rec_all$rekg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'BET'] <- lenW_BET(lf=rel_rec_all$relen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'BET'])
+ rel_rec_all$rekg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec_all$relen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'SKJ'])
+ rel_rec_all$rekg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec_all$relen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'YFT'])
+ rel_rec_all$rekg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec_all$relen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'LTA'])/1000
 
- rel_rec$rckg <- NA
+ rel_rec_all$rckg <- NA
 #
- rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'BET'] <- lenW_BET(lf=rel_rec$rclen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'BET'])
-rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec$rclen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'])
- rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec$rclen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'YFT'])
- rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec$rclen[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'LTA'])/1000
- dim(rel_rec)
+ rel_rec_all$rckg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'BET'] <- lenW_BET(lf=rel_rec_all$rclen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'BET'])
+rel_rec_all$rckg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'SKJ'] <- lenW_SKJ(lf=rel_rec_all$rclen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'SKJ'])
+ rel_rec_all$rckg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'YFT'] <- lenW_YFT(lf=rel_rec_all$rclen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'YFT'])
+ rel_rec_all$rckg[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'LTA'] <- lenW_LTA(lf=rel_rec_all$rclen[!is.na(rel_rec_all$speciescode) & rel_rec_all$speciescode == 'LTA'])/1000
+ dim(rel_rec_all)
  
 #
 # # Add on useful time vectors, e.g. julian day, month, year
 #
  
- rel_rec <- timeVectors(input=rel_rec,orig.date="2016-01-01");dim(rel_rec)
+ rel_rec_all <- timeVectors(input=rel_rec_all,orig.date="2016-01-01");dim(rel_rec_all)
  
  #iotc  <- timeVectors(input = iotc)
 #
 # # Add on useful spatial information
 #
- rel_rec <- spatialVectors(input=rel_rec);dim(rel_rec)
+ rel_rec_all <- spatialVectors(input=rel_rec_all);dim(rel_rec_all)
 
+ #table(rel_rec$refmor)
+ #table(rel_rec$rcfmor)
  
- table(rel_rec$refmor)
- table(rel_rec$rcfmor)
- 
- table(rel_rec$reyrmon,rel_rec$requad)
- tt <- table(rel_rec$rcyrmon,rel_rec$rcquad)
+ table(rel_rec_all$reyrmon,rel_rec_all$requadrant)
+ tt <- table(rel_rec_all$rcyrmon,rel_rec_all$rcquadrant)
  
  #table(rel_rec$tagseeding)
  
@@ -301,30 +319,72 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
  
 # # Quality assessment
 #
- rel_rec <- tagDataValidation(input=rel_rec)
- dim(rel_rec);table(rel_rec$score)
+ rel_rec_all <- tagDataValidation(input=rel_rec_all)
+ dim(rel_rec_all);table(rel_rec_all$score)
 #
 # # Calculated distance between release and recovery
 
- rel_rec$kms <- distance(rclonx=rel_rec$rclonx, rclaty=rel_rec$rclaty, relonx=rel_rec$relonx, relaty = rel_rec$relaty)
-#
- rel_rec$nautical_m <- rel_rec$kms * 0.5399 # nautical miles
- rel_rec$month_fraction <- rel_rec$days_at_liberty/30.43 # month fraction
- rel_rec$migration_per_month <- rel_rec$nautical_m/rel_rec$month_fraction #migration distance per month
- rel_rec$tagseeding <- 0
- rel_rec$electronictagcode1 <- rep(NA,length(rel_rec[,1]))
+ rel_rec_all$kms <- distance(rclonx=rel_rec_all$rclonx, rclaty=rel_rec_all$rclaty, relonx=rel_rec_all$relonx, relaty = rel_rec_all$relaty)
+ #
+ rel_rec_all$nautical_m <- rel_rec_all$kms * 0.5399 # nautical miles
+ rel_rec_all$month_fraction <- rel_rec_all$days_at_liberty/30.43 # month fraction
+ rel_rec_all$migration_per_month <- rel_rec_all$nautical_m/rel_rec_all$month_fraction #migration distance per month
+ rel_rec_all$tagseeding <- 0
+ rel_rec_all$electronictagcode1 <- rep(NA,length(rel_rec_all[,1]))
 
- rci <- which(rel_rec$rcstagecode_rc %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
+write.table(rel_rec_all,file="C:\\FLTag/AllICCAT-Tagging-Data.csv",sep=",",row.names = FALSE)
  
- rel_rec$recovered <- FALSE
+rci <- (1:dim(aottp)[[1]])[rel_rec_all$rcstagecode_rc %in% c("R-2","R-3","R-4","R-5","RCF")]       # Where are the recoveries
+aottp$recovered <- FALSE
+aottp$recovered[rci] <- TRUE
+table(aottp$recovered)
+
+rci2 <- which(!is.na(iccat$rcdate))       # Where are the recoveries
+
+iccat$recovered <- FALSE
+iccat$recovered[rci2] <- TRUE
+table(iccat$recovered)
  
- rel_rec$recovered[rci] <- TRUE
+table(rel_rec_all$recovered,rel_rec_all$proyect)
+
+dimx <- rel_rec$rcdate[rel_rec$recovered==T]
+
+### Add in vesselname ### 
+
+rel_rec$revesselname <- vessels$vesselname[match(rel_rec$revesselid,vessels$vesselid)]
+
+
+
+
+### Bermuda releases ###
+
+bermuda <- rel_rec[!is.na(rel_rec$reeez) & rel_rec$reeez == 'Bermudian EEZ',]
+table(bermuda$revesselname)
+
  
- # St Helena releases #
+### St Helena releases ###
  
  elena <- rel_rec[rel_rec$reteam %in% c('E30','E31','E32'),]
- tt <- table(elena$rcstagecode_rc,elena$speciescode)
+ table(elena$rcstagecode_re,elena$speciescode)
+ str(elena)
+ #elena$redate <- as.POSIXct(strptime(elena$rdate, format = "%Y-%m-%d"))
+ #elena$reyrmon <- as.yearmon(elena$redate)
  
+ 
+ elena <- elena[elena$rcstagecode_re == 'R-1',]
+ sth.tots <- table(elena$speciescode,elena$reyrmon)
+ sth.tots <-rbind(sth.tots,apply(sth.tots,2,sum))
+ sth.tots <-cbind(sth.tots,apply(sth.tots,1,sum))
+ write.table(sth.tots,"T:\\AOTTP/Tenders/Phase2-Tagging/SE-Atlantic/Evaluation/Contract/St.Helena.Totals.July-30-2019.csv",sep=',')
+
+ 
+ # Ivorian releases
+ 
+ civ <- rel_rec[rel_rec$reteam %in% c('E29'),]
+ 
+ # Have a look at Jesus' gis schema
+ 
+ relrecline <- sqlQuery(aottp, "SELECT * from gis.relrecline;"); 
  
  # Etag coding.
  
@@ -340,6 +400,102 @@ rel_rec$rckg[!is.na(rel_rec$speciescode) & rel_rec$speciescode == 'SKJ'] <- lenW
  
  dim(tseed)
  
+ ###################################################
+ ### Relationship between Tagging and Recovery #####
+ ###################################################
+ 
+ ## Just the East side ##
+ 
+ rel_rec_e <- rel_rec[rel_rec$relonx >= -30,]
+ 
+ # Yellow tags from Jesus' 'view'
+ 
+ yel <- rel_rec[rel_rec$tagcolor1 == 3,]
+ 
+ # By month
+ 
+ xxx <- table(yel$reyrmon,yel$recovered)
+ 
+ dat <- data.frame(abt = 1:dim(xxx)[[1]]+5,yrmon=dimnames(xxx)[[1]],
+   rc = as.vector(xxx[,"TRUE"]),re = as.vector(xxx[,"FALSE"]+xxx[,"TRUE"]))
+ 
+ #dat<-dat[1:36,]
+ 
+ 
+ # Regress recoveries on the number of releases the same and previous month
+ dd <- dim(dat)[1]
+ dat$re1 <- c(NA,dat$re[-dd])
+ dat$re2 <- c(NA,NA,dat$re[1:(dd-2)])
+ dat$re3 <- c(NA,NA,NA,dat$re[1:(dd-3)])
+ 
+ dat <- dat[3:35,]
+ 
+ tm1 <- glm(rc~abt,data=dat,family=quasipoisson)
+ tm2 <- glm(rc~abt+re,data=dat,family=quasipoisson)
+ tm3 <- glm(rc~abt+re+re1,data=dat,family=quasipoisson)
+ tm4 <- glm(rc~abt+re+re1+re2,data=dat,family=quasipoisson)
+ 
+ anova(tm1,tm2,tm3,tm4,test="Chi")
+ 
+ ndata <-data.frame(abt=1:120,re=0)
+ ndata$pred.recoveries <- round(predict(tm2,ndata,type='response'),1)
+ 
+ ndata$yr <- rep(2015:2024,rep(12,10))
+ ndata$mon <- rep(1:12,10)
+ 
+ 
+ 
+par(mfrow=c(1,1))
+  plot(ndata$abt,ndata$pred.recoveries,xlab='year',ylab='no recoveries',
+      xlim=c(8,120),ylim=c(0,3000),xaxt='n')
+ #points(ndata$abt,ndata$pred.recoveries.lag1,col='red')
+ abline(v=seq(1,120,by=12),lty=2,col='green')
+ mtext(as.character(2015:2024),side=1,at=seq(7,125,by=12),cex=.6)
+ points(dat$abt,dat$rc)
+ 
+ write.table(ndata[,c(1,2,3,5,6)][73:120,],file="T:/AOTTP/Planning/Recovery_predictions.csv",sep=",",row.names=F)
+ 
+ ##########################
+ ## Just the NW Quadrant ##
+ 
+ rel_rec_nw <- rel_rec[rel_rec$relonx <= -30 & rel_rec$relaty >=10,]
+ 
+ # Yellow tags from Jesus' 'view'
+ 
+ yel <- rel_rec[rel_rec$tagcolor1 == 3,]
+ 
+ # By month
+ 
+ xxx <- table(yel$reyrmon,yel$recovered)
+ xxx<-xxx[1:36,]
+ 
+ dat <- data.frame(abt = 1:dim(xxx)[[1]]+5,yrmon=dimnames(xxx)[[1]],re = as.vector(xxx[,"FALSE"]+xxx[,"TRUE"]), rc = as.vector(xxx[,"TRUE"]))
+ 
+ # Regress recoveries on the number of releases the same and previous month
+ 
+ dat$rc1 <- c(dat$rc[-1],NA)
+ dat$rc2 <- c(dat$rc[-c(1:2)],NA,NA)
+ 
+ tm1 <- glm(rc~re+abt,data=dat,family=quasipoisson)
+ tm2 <- glm(rc1~re+abt,data=dat,family=quasipoisson)
+ anova(tm1,tm2)
+ 
+ ndata <-data.frame(abt=1:120,re=0)
+ ndata$pred.recoveries <- round(predict(tm1,ndata,type='response'),1)
+ ndata$pred.recoveries.lag1 <- round(predict(tm2,ndata,type='response'),1)
+ ndata$yr <- rep(2015:2024,rep(12,10))
+ ndata$mon <- rep(1:12,10)
+ 
+ plot(ndata$abt,ndata$pred.recoveries,xlab='year',ylab='no recoveries',
+   xlim=c(48,120),ylim=c(0,25),xaxt='n')
+ #points(ndata$abt,ndata$pred.recoveries.lag1,col='red')
+ abline(v=seq(1,120,by=12),lty=2,col='green')
+ mtext(as.character(2015:2024),side=1,at=seq(6,125,by=12),)
+ 
+ 
+ 
+ 
+
  ####################################################
  ### Create file for charter type for each survey ###
  ####################################################
@@ -638,17 +794,17 @@ K0
  fplot(input=rel_rec,what.to.plot='kms',what.species='BET',max.obs=5000)
  
  
- fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species='YFT',max.obs=900)
+ fplot(input=rel_rec[rel_rec$project=='iccat',],what.to.plot='days_at_liberty',what.species='YFT',max.obs=900)
  fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','SKJ','LTA','YFT'),max.obs=900)
- fplot(input=rel_rec[rel_rec$tagseeding == 0,],what.to.plot='days_at_liberty',what.species=c('BET','YFT'),max.obs=700)
+ fplot(input=rel_rec,what.to.plot='days_at_liberty',what.species=c('BET','YFT'),max.obs=700)
 #
  fplot(input=rel_rec,what.to.plot='nautical_m',what.species=c('BET','SKJ','LTA','YFT'),max.obs=2000)
  fplot(input=rel_rec,what.to.plot='kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
  fplot(input=rel_rec,what.to.plot='rec_kg',what.species=c('BET','SKJ','LTA','YFT'),max.obs=15)
  fplot(input=rel_rec[rel_rec$project == 'aottp',],what.to.plot='len',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
- fplot(input=rel_rec[rel_rec$project == 'iccat',],what.to.plot='len',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
+ fplot(input=rel_rec[rel_rec$project == 'iccat',],what.to.plot='relen',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
  
- fplot(input=rel_rec,what.to.plot='rec_len',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
+ fplot(input=rel_rec,what.to.plot='relen',what.species=c('BET','SKJ','LTA','YFT'),max.obs=150)
  fplot(input=rel_rec[rel_rec$zone == 'F',],what.to.plot='days_at_liberty',what.species=c("BET","SKJ",'YFT'),max.obs=550)
  fplot(input=rel_rec[rel_rec$zone == 'B',],what.to.plot='days_at_liberty',what.species=c("BET","SKJ",'YFT'),max.obs=550)
  
@@ -661,9 +817,10 @@ K0
  
  
 input <- rel_rec 
-mapPoints(input = input,what.longitude = "relonx",what.latitude="relaty",what.size=2)
+mapPoints(input = input[input$project == 'aottp',],what.longitude = "relonx",what.latitude="relaty",what.species =c("BET","YFT","SKJ"),what.size=1)
+mapPoints(input = input[input$project == 'iccat',],what.longitude = "relonx",what.latitude="relaty",what.species =c("BET","YFT","SKJ"),what.size=1)
 
-mapPoints(input = input[input$vesselid != 1017,],what.longitude = "longitude",what.latitude="latitude", what.species = c("BET","LTA","SKJ","YFT"),what.size=2)
+mapPoints(input = input[input$vesselid != 1017,],what.longitude = "relonx",what.latitude="relaty", what.species = c("BET","LTA","SKJ","YFT"),what.size=2)
 
 mapPoints(input = input,what.longitude = "longitude",what.latitude="latitude", what.species = c("BET"),what.size=.1)
 
@@ -680,9 +837,16 @@ mapPoints(input = input[input$vesselid != 1017,],what.longitude = "rec_longitude
  
  #### TAG SEEDING #####
  
- mapPoints(input = rel_rec[rel_rec$tagseeding==1,],what.longitude = "longitude",what.latitude="latitude", what.species = c("BET","SKJ","YFT"),what.size=4)
+ tseed <- sqlQuery(aottp,"SELECT * from releases_recoveries_tagseeding_export")
+ tseed <- subset(tseed, select = -rcnotes)
+ ts1<- TagSeedingTab(input=tseed)$tagSeedRel
+ ts2<- TagSeedingTab(input=tseed)$tagSeedRec
+ ts3<- TagSeedingTab(input=tseed)$tagSeedPerc
  
- mapPoints(input = rel_rec[rel_rec$tagseeding==1,],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("BET","SKJ","YFT"))
+ mapPoints(input=tseed,what.longitude = 'relonx',
+   what.latitude = "relaty",what.species=c("BET","SKJ","YFT"),
+   lon.limits=c(-40,30),lat.limits=c(-25,25))
+ 
  
  
  
@@ -709,8 +873,13 @@ mapPoints(input=etags[etags$supplier=='WC',],what.longitude = 'rclonx',what.lati
 mapPoints(input=etags[etags$supplier=='DS',],what.longitude = 'rclonx',what.latitude = "rclaty",what.species=c("BET","SKJ","YFT"))
 mapPoints(input=etags[etags$supplier=='LOTEK 8610',],what.longitude = 'rclonx',what.latitude = "rclaty",what.species=c("BET","SKJ","YFT"))
 
-mapPoints(input=etags[etags$re_rcstagecode=='R-1',],what.longitude = 'relonx',what.latitude = "relaty",
-          what.species=c("BET","YFT"),what.size=5)
+mapPoints(input=elec.r1[elec.r1$supplier == 'WC',],what.longitude = 'relonx',what.latitude = "relaty",
+          what.species=c("BET","YFT"),what.size=2)
+
+mapPoints(input=elec.r1[elec.r1$supplier == 'WC',],what.longitude = 'rclonx',what.latitude = "rclaty",
+  what.species=c("BET","YFT"),what.size=1)
+
+
 
  
  
@@ -739,26 +908,62 @@ mapPoints(input=etags[etags$re_rcstagecode=='R-1',],what.longitude = 'relonx',wh
  
  #
 # #hexbins
- mapHexbin(input = rel_rec[rel_rec$tagseeding==0 & is.na(rel_rec$electronictagcode1),], what.longitude='longitude',what.latitude='latitude',what.species = c("SKJ","LTA","YFT","BET") ,nbins=75)
- mapHexbin(input = rel_rec[rel_rec$tagseeding==0 & is.na(rel_rec$electronictagcode1),],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"),nbins=200)
- mapHexbin(input = rel_rec[rel_rec$tagseeding==0,],what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("BET"),nbins=30)
-#
+ mapHexbin(input = rel_rec, what.longitude='relonx',what.latitude='relaty',what.species = c("SKJ","LTA","YFT","BET") ,nbins=150)
+ mapHexbin(input = rel_rec, what.longitude='rclonx',what.latitude='rclaty',what.species = c("SKJ","LTA","YFT","BET") ,nbins=150)
+ 
 # # Nautical miles
- input <-rel_rec[rel_rec$tagseeding==0,]
+ input <-rel_rec
 pander(tapply(input$nautical_m,input$speciescode,summary,na.rm=T))
 # #TaL
 tapply(input$days_at_liberty,input$speciescode,summary,na.rm=T)
-#
+tapply(input$days_at_liberty,input$speciescode,summary,na.rm=T)
+tapply(rel_rec$days_at_liberty,rel_rec$requad,summary,na.rm=T)
+
+xyplot(days_at_liberty ~ redate|requad,groups=speciescode,data=rel_rec[rel_rec$project == 'iccat' & 
+      rel_rec$days_at_liberty >0 & rel_rec$days_at_liberty <= 3650,])
+
+
+xyplot(days_at_liberty ~ redate|requad,data=rel_rec[rel_rec$project == 'aottp' &
+      rel_rec$days_at_liberty >0 & rel_rec$days_at_liberty <= 3650,])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 # #tracks
 input <-rel_rec
- mapTrack(input = input,what.distance=750, what.species='BET',what.size=1,lon.limits=c(-50,30),lat.limits=c(-50,50))
-
+ mapTrack(input = input,what.distance=1250, what.species=c('BET',"YFT"),what.size=.01,
+   lon.limits=c(-50,20),lat.limits=c(-40,40))
  
-  mapTrack(input = input[input$nautical_m >= 750,], what.species='YFT',what.size=1)
+ iccat <-rel_rec[rel_rec$project == 'iccat',]
+ 
+ mapTrack(input = input[input$project=='iccat',],what.distance=1, 
+    what.species=c('YFT'),
+   what.size=.01,
+   lon.limits=c(-90,20),lat.limits=c(-50,40))
+ 
+ sth <- iccat[iccat$reeez == 'St. Helena EEZ',]
+ 
+ mapTrack(input = sth,what.distance=1, what.species=c('BET','SKJ','YFT'),what.gear = c('PS','HL','BB','GILL','UNKN','LL','SPOR'),
+   what.size=.01,
+   lon.limits=c(-6,-5.0),lat.limits=c(-16.25,-15.5))
+ 
+ 
+  mapTrack(input = input, what.species='YFT',what.size=1)
  mapTrack(input = input[input$nautical_m >= 500,], what.species='SKJ',what.size=1)
  
- mapTrack(input = input[input$nautical_m >= 5,], what.species='LTA',what.size=.1)
+ mapTrack(input = input, what.species='LTA',what.size=.1)
  
  
  mapTrack(input = rel_rec[rel_rec$nautical_m >= 50,],what.species='SKJ',what.gear='BB',what.size=.5)
@@ -770,7 +975,24 @@ input <-rel_rec
  mapTrack(input = rel_rec[rel_rec$nautical_m >= 100,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='BB',what.size=.25)
  mapTrack(input = rel_rec[rel_rec$nautical_m >= 100,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='PS',what.size=.25)
  mapTrack(input = rel_rec[rel_rec$nautical_m >= 100,],what.species=c('BET','LTA','SKJ','YFT'),what.gear='LL',what.size=.25)
- mapTrack(input = rel_rec[rel_rec$nautical_m >= 100,],what.species=c('BET','LTA','SKJ','YFT'),what.gear=c('BB','PS','LL'),what.size=.25)
+ mapTrack(input = rel_rec[rel_rec$nautical_m >= 100,],what.species=c('BET','LTA','SKJ','YFT'),
+   what.gear=c('BB','PS','LL'),what.size=.25)
+ 
+ 
+ mapTrack(input = elec[elec$renumtagelectronic == "86929",],what.species=c('BET'),what.distance=5,what.size=1)
+
+ ltk <-elec[!is.na(elec$days_at_liberty) & elec$days_at_liberty > 365 & elec$supplier == 'LOTEK LAT2810',]
+
+  mapTrack(input = ltk[ltk$renumtagelectronic == 86827,],what.species=c('YFT'),what.distance=3,what.size=1,
+    lon.limits=c(-50,10),lat.limits=c(-5,10))
+ 
+  mapTrack(input = ltk[ltk$renumtagelectronic == 86859,],what.species=c('YFT'),what.distance=3,what.size=1,
+    lon.limits=c(-50,50),lat.limits=c(-50,20))
+  
+ 
+ 
+ 
+ 
  
 #
 #
@@ -823,7 +1045,8 @@ relRecTimeSeries(rel_rec,what.species=c('BET','YFT'))
  
  
  relRecTimeSeries(input=data(iotc))
- 
+ relRecTimeSeries(input=bermuda)
+ relRecTimeSeries(input=rel_rec[rel_rec$reteam == 'E33',])
  
  relRecTimeSeries(input=iotc,what.species='BET')
 #
@@ -874,23 +1097,23 @@ table(jf2018$rec_fmor18,jf2018$speciescode)
 
 #
 rel_rec <- timeVectors()
-rel_rec$dlen <- rel_rec$rec_len-rel_rec$len
- growthTrack(input=rel_rec[rel_rec$tagseeding == 0 & rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS' & rel_rec$days_at_liberty > 89,],what.species ='BET')
- growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS',],what.species =c('BET','LTA','SKJ','YFT'))
- growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rec_gearcode == 'PS'& rel_rec$days_at_liberty > 29,],what.species =c('BET','LTA','SKJ','YFT'))
-#
- growthTrack(input=rel_rec[rel_rec$dlen >0 & rel_rec$tagseeding ==0 & rel_rec$score > 3 & rel_rec$rec_gearcode %in% c('BB') & rel_rec$days_at_liberty > 30,],what.species =c('BET','YFT'),what.size=.3)
-#
- growthTrack(input=rel_rec[rel_rec$score == 6,],what.species ='LTA')
+rel_rec$dlen <- rel_rec$rclen-rel_rec$relen
+ growthTrack(input=rel_rec,what.species ="SKJ")
+ growthTrack(input=rel_rec[rel_rec$score > 3 & rel_rec$rcgearcode == 'PS',],what.species =c('BET','LTA','SKJ','YFT'))
+ growthTrack(input=rel_rec[rel_rec$rcgearcode=="BB" & rel_rec$dlen>0 & rel_rec$days_at_liberty > 60,],
+   what.size=.1,what.species =c('BET'))
+
+ 
+ 
  
 # By quadrant
 #
  
-table(rel_rec$quad)
+table(rel_rec$requad)
  
 input <- rel_rec[rel_rec$tagseeding == 0,]
 
-qdr <- as.character(input$quad[input$speciescode %in% c('BET','SKJ','YFT','WAH','LTA')])
+qdr <- as.character(input$requad[input$speciescode %in% c('BET','SKJ','YFT','WAH','LTA')])
        
 spc <- as.character(input$speciescode[input$speciescode %in% c('BET','SKJ','YFT','WAH','LTA')])
 
@@ -1145,29 +1368,36 @@ sdata <- rel_rec[-ind,] # chuck out really short times at liberty
 dim(sdata)
 sum(is.na(sdata$date))
 sdata<-sdata[sdata$speciescode %in% c('BET','SKJ','YFT','LTA'),] # four main species
+sdata<-sdata[sdata$rcstagecode_re =='R-1',]
 
-start <- as.numeric(sdata$jday)-min(as.numeric(sdata$jday),na.rm=T)
-stop  <- as.numeric(sdata$rec_jday)-min(as.numeric(sdata$jday),na.rm=T)
+start <- as.numeric(sdata$rejday)-min(as.numeric(sdata$rejday),na.rm=T)
+stop  <- as.numeric(sdata$rcjday)-min(as.numeric(sdata$rcjday),na.rm=T)
 
 
 #stop[is.na(stop)] <- max(stop,na.rm=T)
-stop[is.na(stop)] <- 730.5 # 2 years
+stop[is.na(stop)] <- 1461 # 4 years
 death <- ifelse(sdata$recovered==FALSE,0,1)
-eez   <- sdata$eez
+eez   <- sdata$reeez
 species <- sdata$speciescode
-length <- sdata$len
-month <- sdata$month
-lat <-sdata$latitude
-lon <- sdata$longitude
+length <- sdata$relen
+month <- sdata$remonth
+lat <-sdata$relaty
+lon <- sdata$relon
 
 smod <- data.frame(start=start,stop=stop,death=death,eez=eez,longitude=lon,latitude=lat,species=species,length=length,month=month) # data set for modeling
  
+smod <- smod[smod$stop>smod$start,]
+
+
+
 library(survival)
 
 S <- Surv(time = smod$start, time2 = smod$stop, event = smod$death)
 
 model <- coxph(S ~ longitude + latitude + as.factor(species) + length, data = smod) # how does time til death (recapture) 
 #depend on latitude, species and length ?
+
+exp(coef(model))
 
 # exp(coef) is the hazard ratio. HR = 1: No effect, HR < 1: reduction in the hazard, HR>1: Increase in the hazard.
 
@@ -1197,7 +1427,7 @@ legend(1.5, 0.9,
        lty = 1, 
        col = c("red", "green","blue"))
 
-
+par(mfrow=c(1,1))
 plot(survfit(model, newdata = expand.grid(longitude=0,latitude=0,species=c("BET","YFT","SKJ","LTA"),length=c(60))), 
      xscale = 365.25,
      conf.int = T,
@@ -1513,7 +1743,7 @@ library(postGIStools)
 con <- dbConnect(PostgreSQL(), dbname = "aottp", user = "aottpw",
                  host = "172.16.1.48",
                  password = "tunasw")
-yfta<- get_postgis_query(con, "GRANT ALL ON SELECT * FROM  gis.yftfa",
+yfta<- get_postgis_query(con, "SELECT * FROM yftfa",
                                geom_name = "geom")
 
 plot(yfta)
