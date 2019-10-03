@@ -358,7 +358,7 @@ rel_rec$revesselname <- vessels$vesselname[match(rel_rec$revesselid,vessels$vess
 
 ### Bermuda releases ###
 
-bermuda <- rel_rec[!is.na(rel_rec$reeez) & rel_rec$reeez == 'Bermudian EEZ',]
+bermuda <- rel_rec_all[!is.na(rel_rec$reeez) & rel_rec$reeez == 'Bermudian EEZ',]
 table(bermuda$revesselname)
 
  
@@ -816,24 +816,19 @@ K0
  #ftags1 <- ftags[ftags$tc==1,]
  
  
-input <- rel_rec 
-mapPoints(input = input[input$project == 'aottp',],what.longitude = "relonx",what.latitude="relaty",what.species =c("BET","YFT","SKJ"),what.size=1)
-mapPoints(input = input[input$project == 'iccat',],what.longitude = "relonx",what.latitude="relaty",what.species =c("BET","YFT","SKJ"),what.size=1)
+input <- rel_rec_all
+mapPoints(input = input[input$tagseries == 'ATP',],what.longitude = "relonx",what.latitude="relaty",
+  what.species =c("BET","YFT","SKJ"),what.size=1)
+mapPoints(input = input[input$tagseries != 'ATP',],what.longitude = "relonx",what.latitude="relaty",
+  what.species =c("BET","YFT","SKJ","SAI"),what.size=1)
+mapPoints(input = input[input$tagseries != 'ATP',],what.longitude = "relonx",what.latitude="relaty",
+  what.species =c("BFT","ALB","BSH"),what.size=1)
+
+
 
 mapPoints(input = input[input$vesselid != 1017,],what.longitude = "relonx",what.latitude="relaty", what.species = c("BET","LTA","SKJ","YFT"),what.size=2)
 
-mapPoints(input = input,what.longitude = "longitude",what.latitude="latitude", what.species = c("BET"),what.size=.1)
-
-mapPoints(input = input,what.longitude = "longitude",what.latitude="latitude", what.species = c("BET","LTA","SKJ","YFT"),what.size=.1)
  
-mapPoints(input = input[input$vesselid != 1017,],what.longitude = "rec_longitude",
-          what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"),what.size=.1)
- 
- mapPoints(input = input,what.longitude = "longitude",what.latitude="latitude", what.species = c("LTA"))
- 
- mapPoints(input = input,what.longitude = "rec_longitude",what.latitude="rec_latitude", what.species = c("SKJ","LTA","YFT","BET"))
- 
- stp<- input[!is.na(input$rec_longitude) & input$rec_eez == "Sao Tome and Principe EEZ",]
  
  #### TAG SEEDING #####
  
