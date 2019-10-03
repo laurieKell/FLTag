@@ -21,6 +21,11 @@ formatTagdata <- function(input=rel_rec){
   i <- sapply(input, is.factor)
   input[i] <- lapply(input[i], as.character)
   
+  #Add T if tag was recovered
+  rci <- which(input$rcstagecode_rc %in% c("R-2","R-3","R-4","R-5","RCF"))        # Where are the recoveries
+  input$recovered <- FALSE
+  input$recovered[rci] <- TRUE
+  
   
   #Electronic tag information
   # wcs <- tagseries$tagnumidfrom[tagseries$tagtype == 'MiniPAT-348C' & tagseries$notes == "electronic pop-up"]:tagseries$tagnumidto[tagseries$tagtype == 'MiniPAT-348C' & tagseries$notes == "electronic pop-up"]
